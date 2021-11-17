@@ -1,0 +1,4 @@
+.ipynb_checkpoints
+.idea
+data/vagus_dataset_*
+model_checkpoints/
