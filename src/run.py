@@ -14,6 +14,9 @@ from model import get_model
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
+from src.visualisation import display_predictions
+
+
 def train(train_data: VagusDataLoader, val_data: VagusDataLoader):
     model = get_model(img_size, num_classes)
 
@@ -34,31 +37,7 @@ def train(train_data: VagusDataLoader, val_data: VagusDataLoader):
 
 def eval(model, test_data):
     test_predictions = model.predict(test_data)
-
-    def get_prediction(i):
-        """Quick utility to display a model's prediction."""
-        mask = np.argmax(test_predictions[i], axis=-1)
-        mask = np.expand_dims(mask, axis=-1)
-        img = PIL.ImageOps.autocontrast(keras.preprocessing.image.array_to_img(mask))
-        return img
-
-    i = 0
-
-    # Display input image
-    original_image = mpimg.imread(val_input_img_paths[i])
-    original_image_plot = plt.imshow(original_image)
-    plt.show()
-
-    # Display ground-truth target mask
-    # original_mask = mpimg.imread(val_target_img_paths[i])
-    # original_mask_plot = plt.imshow(original_mask)
-    # plt.show()
-    original_mask = PIL.ImageOps.autocontrast(load_img(val_target_img_paths[i]))
-
-    # Display mask predicted by our model
-    prediction = get_prediction(i)  # Note that the model only sees inputs at 150x150.
-
-    return original_image, original_mask, prediction
+    return test_predictions
 
 
 if __name__ == '__main__':
@@ -76,4 +55,6 @@ if __name__ == '__main__':
 
     trained_model = train(train_data, val_data)
 
-    eval(trained_model, val_data)
+    predictions = eval(trained_model, val_data)
+
+    display_predictions(val_input_img_paths, val_target_img_paths, predictions)

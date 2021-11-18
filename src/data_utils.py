@@ -1,11 +1,9 @@
 import os
 
-import PIL.Image
 import cv2
 import numpy as np
 from pdf2image import convert_from_path
-import imageio
-from PIL import Image
+
 
 def dataset_convert(input_folder, output_folder):
     """ Convert google drive vagus_dataset_1 into model ready format """
@@ -23,7 +21,7 @@ def dataset_convert(input_folder, output_folder):
                 pages = convert_from_path(fpath)
                 assert len(pages) == 1
                 img = pages[0]
-                img = cv2.cvtColor(np.float32(img), cv2.COLOR_RGB2GRAY)
+                img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)  # convert PIL image to open cv image
             elif fname.endswith('.ai'):
                 continue  # skip processing AI files
             else:
@@ -39,25 +37,28 @@ def annotations_convert(folder):
         fpath = os.path.join(input_directory, fname)
         out_fname = fname.rsplit('.', 1)[0] + '.bmp'
         out_fpath = os.path.join(directory, out_fname)
-        img_arr = np.asarray(cv2.imread(fpath), dtype=np.int8)
-        converter = lambda x: 1 if x <= 100 else 0
+        img_arr = np.asarray(cv2.imread(fpath), dtype=np.uint8)
+        converter = lambda x: 1 if x <= 150 else 0
         converted = np.vectorize(converter)(img_arr)
         if np.unique(converted).tolist() != [0, 1]:
-            raise ValueError(f'Invalid conversion of annotation: {out_fpath}')
+            raise ValueError(f'Invalid conversion of annotation: {out_fpath}, '
+                             f'Image vals: {np.unique(img_arr).tolist()}, '
+                             f'Converted vals: {np.unique(converted).tolist()}')
         # NOTE: do not use CV2 here, it modifies the values in the numpy array
         # imageio.imwrite(out_fpath, converted[:, :, 0])
         cv2.imwrite(out_fpath, converted, [cv2.IMWRITE_PNG_BILEVEL, 1])
         # PIL.Image.fromarray(converted).save(out_fpath, bits=1, optimize=True)
 
-
-
         # Check annotations written properly
         img_arr = np.asarray(cv2.imread(out_fpath))
+
         def checker(x):
             if not (x == 1 or x == 0):
                 raise ValueError(f'Invalid annotation: {out_fpath}, {np.unique(img_arr)}')
             return x
+
         np.vectorize(checker)(img_arr)
+
 
 def input_target_path_pairs(directory, print_examples=48):
     """ Create image target pairs """
