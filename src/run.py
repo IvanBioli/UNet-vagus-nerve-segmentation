@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
 
-from config import img_size, num_classes, val_samples, batch_size, epochs, seed, steps_per_epoch
+from config import img_size, num_classes, val_samples, batch_size, epochs, seed, steps_per_epoch, validation_steps
 from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from model import get_model
@@ -31,7 +31,8 @@ def train(train_data: VagusDataLoader, val_data: VagusDataLoader):
     ]
 
     # Train the model, doing validation at the end of each epoch.
-    model.fit(train_data, epochs=epochs, steps_per_epoch=steps_per_epoch, validation_data=val_data, callbacks=callbacks)
+    model.fit(train_data, epochs=epochs, steps_per_epoch=steps_per_epoch, validation_data=val_data,
+                validation_steps=validation_steps, callbacks=callbacks)
 
     return model
 
