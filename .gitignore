@@ -3,4 +3,4 @@
 data/vagus_dataset_*
 model_checkpoints/
 notebooks/.ipynb_checkpoints
-src/__pycahce__
+src/__pycache__
