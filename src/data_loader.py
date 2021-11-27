@@ -30,5 +30,5 @@ class VagusDataLoader(keras.utils.Sequence):
             y[j] = np.expand_dims(img, 2)
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
             # TODO what?
-            y[j] -= 1
+            # y[j] -= 1
         return x, y

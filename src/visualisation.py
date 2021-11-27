@@ -43,10 +43,14 @@ def display_predictions(input_image_paths, input_target_paths, predictions):
 
 def visualise_one_prediction(model, input_image):
     print('Input image shape: ', input_image.shape)
+    # plt.imshow(input_image)
     plt.imshow(input_image[0, :, :, :] / 255)
     plt.show()
 
     prediction = model.predict(input_image)
+    print('Model output shape: ', prediction.shape)
+    prediction = np.argmax(prediction, axis=-1)
+    prediction = prediction[0, :, :]
     print('Prediction shape: ', prediction.shape)
     plt.imshow(prediction)
     plt.show()

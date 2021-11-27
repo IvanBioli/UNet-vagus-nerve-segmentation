@@ -65,6 +65,7 @@ def annotations_convert(folder):
 
 def annotation_preprocessor(annotation):
     """ Converts JPEG annotation to image with [0, 1] values for model input. """
+    # return annotation
     threshold = 127
     _, annotation = cv2.threshold(annotation, threshold, 255, cv2.THRESH_BINARY)
     annotation = annotation.astype(float) / 255
