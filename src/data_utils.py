@@ -66,12 +66,9 @@ def annotations_convert(folder):
 def annotation_preprocessor(annotation):
     """ Converts JPEG annotation to image with [0, 1] values for model input. """
     threshold = 127
-    # print(annotation.shape, 'annotations shape')
-    # annotation = cv2.cvtColor(annotation, cv2.COLOR_BGR2GRAY)
     _, annotation = cv2.threshold(annotation, threshold, 255, cv2.THRESH_BINARY)
     annotation = annotation.astype(float) / 255
     annotation = np.expand_dims(annotation, axis=2)
-    print('annotations shape: ', annotation.shape)
     return annotation
 
 

@@ -20,7 +20,7 @@ def display_predictions(input_image_paths, input_target_paths, predictions):
     axes = []
     fig = plt.figure()
 
-    for row in range(0, rows, 3):
+    for row in range(0, rows, 10):
         axes.append(fig.add_subplot(rows, cols, row + 1))
         # input_image = PIL.Image.open(input_image_paths[row])
         plt.imshow(cv2.imread(input_image_paths[row]))
@@ -39,6 +39,25 @@ def display_predictions(input_image_paths, input_target_paths, predictions):
 
     fig.tight_layout()
     plt.show()
+
+
+def visualise_one_prediction(model, input_image):
+    print('Input image shape: ', input_image.shape)
+    plt.imshow(input_image[0, :, :, :] / 255)
+    plt.show()
+
+    prediction = model.predict(input_image)
+    print('Prediction shape: ', prediction.shape)
+    plt.imshow(prediction)
+    plt.show()
+
+
+def compare_augmented_image_annotations(img_generator, anno_generator):
+    for i in range(5):
+        plt.imshow(img_generator.next()[0, :, :, :] / 255)
+        plt.show()
+        plt.imshow(anno_generator.next()[0, :, :, 0])
+        plt.show()
 
 
 """
