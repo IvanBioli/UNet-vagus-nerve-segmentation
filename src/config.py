@@ -1,9 +1,9 @@
 batch_size = 1
-img_size = (160, 160)
-num_classes = 256
-val_samples = 5
-epochs = 1
-seed=1
+img_size = (512, 512)
+num_classes = 2  # TODO change num classes to 2
+val_samples = 1
+epochs = 15
+seed = 1
 train_sample_size = 65
 val_sample_size = 12
 steps_per_epoch = train_sample_size / batch_size

@@ -41,6 +41,10 @@ def display_predictions(input_image_paths, input_target_paths, predictions):
     plt.show()
 
 
+"""
+TODO modify dimensions, transparent overlay, 
+"""
+
 if __name__ == '__main__':
     display_annotation_high_contrast('data/vagus_dataset_2/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0100.bmp')
 

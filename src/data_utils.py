@@ -1,8 +1,11 @@
 import os
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
+from PIL import ImageOps
 from pdf2image import convert_from_path
+from tensorflow import keras
 
 
 def dataset_convert(input_folder, output_folder):
@@ -60,6 +63,48 @@ def annotations_convert(folder):
         np.vectorize(checker)(img_arr)
 
 
+def annotation_preprocessor(annotation):
+    """ Converts JPEG annotation to image with [0, 1] values for model input. """
+    threshold = 127
+    # print(annotation.shape, 'annotations shape')
+    # annotation = cv2.cvtColor(annotation, cv2.COLOR_BGR2GRAY)
+    _, annotation = cv2.threshold(annotation, threshold, 255, cv2.THRESH_BINARY)
+    annotation = annotation.astype(float) / 255
+    annotation = np.expand_dims(annotation, axis=2)
+    print('annotations shape: ', annotation.shape)
+    return annotation
+
+
+
+# def convert_annotation_test(im):
+#     print(im.shape)
+#     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+#     print(im.shape)
+#     plt.imshow(im)
+#     print(np.unique(im))
+#     plt.show()
+#     t, im = cv2.threshold(im, 127, 255, cv2.THRESH_BINARY)
+#     im = im.astype(float) / 255
+#     print(im.shape)
+#     print(t)
+#     print(np.unique(im))
+#     plt.imshow(im)
+#     plt.show()
+#     # img = ImageOps.autocontrast(keras.preprocessing.image.array_to_img(im))
+#     # plt.imshow(img)
+#     # plt.show()
+#     cv2.imwrite('data/tests/test.bmp', im)
+#
+#     im = cv2.imread('data/tests/test.bmp', im)
+#     print(im.shape)
+#     print(np.unique(im))
+
+
+
+
+
+
+
 def input_target_path_pairs(directory, print_examples=48):
     """ Create image target pairs """
     input_dir = os.path.join(os.getcwd(), directory, 'images')
@@ -92,4 +137,5 @@ if __name__ == '__main__':
     os.chdir('/home/albion/code/EPFL/ml/nerve-segmentation')
     # run the following lines only once
     # dataset_convert('data/vagus_dataset_2_ai', 'data/vagus_dataset_2')
-    annotations_convert('data/vagus_dataset_2')
+    # annotations_convert('data/vagus_dataset_2')
+    im = cv2.imread('data/train/annotations_old/vago DX - 27.06.18 - HH - vetrino 1 - prox - campione 0002.jpg')
