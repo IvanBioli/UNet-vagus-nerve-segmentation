@@ -3,7 +3,7 @@ import os
 from keras_preprocessing.image import ImageDataGenerator
 from tensorflow import keras
 
-from config import img_size, num_classes, batch_size, epochs, seed, steps_per_epoch, validation_steps, val_samples
+from config import img_size, num_classes, batch_size, epochs, seed, steps_per_epoch, validation_steps, val_samples, initialise_run
 from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from model import get_model
@@ -87,14 +87,6 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
     # print(predictions.shape)
     # display_predictions(val_input_img_paths, val_target_img_paths, predictions)
     print('Finished predictions')
-
-
-def initialise_run():
-    """ Machine specific run initialisation """
-    # devices = tf.config.experimental.list_physical_devices('GPU')
-    # tf.config.experimental.set_memory_growth(devices[0], True)
-    os.chdir('/home/albion/code/EPFL/ml/nerve-segmentation')
-    # os.chdir('D:/EPFL/ML/projects/nerve-segmentation/')
 
 
 if __name__ == '__main__':

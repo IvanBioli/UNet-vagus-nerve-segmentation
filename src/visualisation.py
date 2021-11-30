@@ -114,21 +114,6 @@ def compare_dataloader_image_annotations(train_dataloader, val_dataloader):
         plt.imshow(y[0, :, :, 0])
         plt.show()
 
-
-def create_augmented_dataset(img_generator, anno_generator, folder, n=300):
-    os.makedirs(os.path.join(folder, 'images'), exist_ok=True)
-    os.makedirs(os.path.join(folder, 'annotations'), exist_ok=True)
-    for i in range(n):
-        x = img_generator.next()
-        cv2.imwrite(os.path.join(folder, 'images', f'image_{i}.jpg'), x[0, :, :, :])
-        y = anno_generator.next()
-        y = y[0, :, :, 0]
-        # y = np.repeat(y[:, :, np.newaxis], 3, axis=2)
-        # y = ImageOps.autocontrast(Image.fromarray(y))
-        # print(type(y))
-        cv2.imwrite(os.path.join(folder, 'annotations', f'anno_{i}.jpg'), y)
-
-
 """
 TODO modify dimensions, transparent overlay, 
 """

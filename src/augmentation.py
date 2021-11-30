@@ -1,22 +1,26 @@
+import os
+
+import cv2
+from PIL import ImageOps, Image
 from keras_preprocessing.image import ImageDataGenerator
 
-from src.config import seed, batch_size, img_size
+from src.config import seed, batch_size, img_size, initialise_run
 from src.data_utils import annotation_preprocessor
 
 
-def get_image_annotation_generators(subset='validation', image_directory='data/train/images', annotation_directory='data/train/annotations_old'):
-
+def get_image_annotation_generators(subset='validation', image_directory='data/train/images', annotation_directory='data/train/annotations_old', validation_split=0.2):
     data_gen_arcs = dict(
         rotation_range=40,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        shear_range=0.2,
-        zoom_range=0.2,
+        width_shift_range=0.3,
+        height_shift_range=0.3,
+        shear_range=0.3,
+        zoom_range=0.3,
         horizontal_flip=True,
         vertical_flip=True,
+        brightness_range=[0.5, 1.3],
         fill_mode='constant',
         cval=255,
-        validation_split=0.2,
+        validation_split=validation_split,
     )
 
     img_datagen = ImageDataGenerator(**data_gen_arcs)
@@ -43,6 +47,29 @@ def get_image_annotation_generators(subset='validation', image_directory='data/t
     anno_generator = anno_datagen.flow_from_directory(subset=subset, **anno_dir_args)
 
     return img_generator, anno_generator
+
+
+def create_augmented_dataset(img_generator, anno_generator, folder, n=300):
+    os.makedirs(os.path.join(folder, 'images'), exist_ok=True)
+    os.makedirs(os.path.join(folder, 'annotations'), exist_ok=True)
+    for i in range(n):
+        x = img_generator.next()
+        cv2.imwrite(os.path.join(folder, 'images', f'image_{i}.jpg'), x[0, :, :, :])
+        y = anno_generator.next()
+        # Anno generator outputs arrays between 0 and 1 (where 1 represents the fasicle)
+        # Convert this to arrays between 0 and 255 (where 0 represents the fasicle)
+        y = (1 - y[0, :, :, :]) * 255
+        cv2.imwrite(os.path.join(folder, 'annotations', f'anno_{i}.jpg'), y)
+
+
+if __name__ == '__main__':
+    initialise_run()
+    # 0 validation images here
+    train_x, train_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
+    test_x, test_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
+
+    create_augmented_dataset(train_x, train_y, 'data/vagus_dataset_5/train', n=10)
+    create_augmented_dataset(test_x, test_y, 'data/vagus_dataset_5/test', n=10)
 
 """
 
