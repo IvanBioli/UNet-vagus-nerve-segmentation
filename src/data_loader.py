@@ -1,6 +1,9 @@
+import cv2
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
+
+from src.config import debug
 
 
 class VagusDataLoader(keras.utils.Sequence):
@@ -31,4 +34,14 @@ class VagusDataLoader(keras.utils.Sequence):
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
             # TODO what?
             # y[j] -= 1
+            annotation = y[j]
+            threshold = 127
+            _, annotation = cv2.threshold(annotation, threshold, 255, cv2.THRESH_BINARY)
+            annotation = annotation.astype(float) / 255
+            annotation = np.expand_dims(annotation, axis=2)
+            y[j] = 1 - annotation
+
+        if i == 0 and debug:
+            print(f'Data loader first x, y pair - x shape: {x.shape}, x min max: {np.min(x)}, {np.max(x)}, y shape: {y.shape}, y values: {np.unique(y, return_counts=True)}')
+
         return x, y

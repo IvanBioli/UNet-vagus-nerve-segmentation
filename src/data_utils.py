@@ -70,6 +70,7 @@ def annotation_preprocessor(annotation):
     _, annotation = cv2.threshold(annotation, threshold, 255, cv2.THRESH_BINARY)
     annotation = annotation.astype(float) / 255
     annotation = np.expand_dims(annotation, axis=2)
+    annotation = 1 - annotation
     return annotation
 
 

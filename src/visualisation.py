@@ -1,3 +1,5 @@
+import os
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,11 +43,25 @@ def display_predictions(input_image_paths, input_target_paths, predictions):
     plt.show()
 
 
+def show_original_image(model_input, i=0):
+    plt.imshow(model_input[i, :, :, :] / 255)
+    plt.show()
+
+
+def show_original_annotation(annotation, i=0):
+    plt.imshow(annotation[i, :, :, 0])
+    plt.show()
+
+
+def show_predicted_annotation(annotation, i=0):
+    plt.imshow(annotation[i, :, :])
+    plt.show()
+
+
 def visualise_one_prediction(model, input_image):
     print('Input image shape: ', input_image.shape)
     # plt.imshow(input_image)
-    plt.imshow(input_image[0, :, :, :] / 255)
-    plt.show()
+    show_original_image(input_image)
 
     prediction = model.predict(input_image)
     print('Model output shape: ', prediction.shape)
@@ -57,11 +73,36 @@ def visualise_one_prediction(model, input_image):
 
 
 def compare_augmented_image_annotations(img_generator, anno_generator):
-    for i in range(5):
-        plt.imshow(img_generator.next()[0, :, :, :] / 255)
+    for i in range(1):
+        x = img_generator.next()
+        plt.imshow(x[0, :, :, :] / 255)
         plt.show()
-        plt.imshow(anno_generator.next()[0, :, :, 0])
+        y = anno_generator.next()
+        plt.imshow(y[0, :, :, 0])
         plt.show()
+
+
+def compare_dataloader_image_annotations(train_dataloader, val_dataloader):
+    for i in range(1):
+        x, y = train_dataloader[i]
+        plt.imshow(x[0, :, :, :] / 255)
+        plt.show()
+        plt.imshow(y[0, :, :, 0])
+        plt.show()
+
+
+def create_augmented_dataset(img_generator, anno_generator, folder, n=300):
+    os.makedirs(os.path.join(folder, 'images'), exist_ok=True)
+    os.makedirs(os.path.join(folder, 'annotations'), exist_ok=True)
+    for i in range(n):
+        x = img_generator.next()
+        cv2.imwrite(os.path.join(folder, 'images', f'image_{i}.jpg'), x[0, :, :, :])
+        y = anno_generator.next()
+        y = y[0, :, :, 0]
+        # y = np.repeat(y[:, :, np.newaxis], 3, axis=2)
+        # y = ImageOps.autocontrast(Image.fromarray(y))
+        # print(type(y))
+        cv2.imwrite(os.path.join(folder, 'annotations', f'anno_{i}.jpg'), y)
 
 
 """
