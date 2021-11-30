@@ -6,6 +6,8 @@ import numpy as np
 from PIL import ImageOps, Image
 from tensorflow import keras
 
+from src.post_processing import identify_fasicle_regions
+
 
 def display_annotation_high_contrast(fpath):
     pil_target_img = ImageOps.autocontrast(Image.fromarray(cv2.imread(fpath)))
@@ -50,11 +52,33 @@ def show_original_image(model_input, i=0):
 
 def show_original_annotation(annotation, i=0):
     plt.imshow(annotation[i, :, :, 0])
+    plt.imsave('results/anno_true.png', annotation[i, :, :, 0])
     plt.show()
 
 
 def show_predicted_annotation(annotation, i=0):
     plt.imshow(annotation[i, :, :])
+    plt.imsave('results/anno_pred.png', annotation[i, :, :])
+    plt.show()
+
+
+def show_combined_result(model_input, y_true, y_pred, i=0, iou_score=None, save_file=None):
+    fig, axs = plt.subplots(1, 3, figsize=(10, 4))
+
+    for i, (ax, val) in enumerate(zip(axs, [model_input[i, :, :, :] / 255, y_true[i, :, :, 0], y_pred[i, :, :]])):
+        ax.imshow(val)
+        num_regions = identify_fasicle_regions(val, return_num_regions=True)
+        if i == 0:
+            ax.set_title(f'Input image', fontsize=10)
+        elif i == 1:
+            ax.set_title(f'True annotation\nNum regions: {num_regions}', fontsize=10)
+        else:
+            ax.set_title(f'Prediction\nIOU: {str(iou_score)}, Num regions: {num_regions}', fontsize=10)
+    fig.tight_layout()
+
+    if save_file:
+        plt.savefig(save_file)
+
     plt.show()
 
 
