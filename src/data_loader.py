@@ -3,7 +3,7 @@ from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
 
-from src.config import debug
+from config import debug
 
 
 class VagusDataLoader(keras.utils.Sequence):

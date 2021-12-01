@@ -7,9 +7,9 @@ from config import img_size, num_classes, batch_size, epochs, seed, steps_per_ep
 from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from model import get_model
-from src.augmentation import get_image_annotation_generators
-from src.eval import model_iou
-from src.visualisation import visualise_one_prediction
+from augmentation import get_image_annotation_generators
+from eval import model_iou
+from visualisation import visualise_one_prediction
 
 
 def train(train_data, val_data, save_location):
@@ -92,6 +92,6 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
 if __name__ == '__main__':
     initialise_run()
     model_save_file = 'model_checkpoints/model_checkpoint6.h5'
-    # m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_4', model_save_file=model_save_file)
+    # m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_5/train', model_save_file=model_save_file)
     output_predictions(trained_model_checkpoint=model_save_file)
     print('Done')

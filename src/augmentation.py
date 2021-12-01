@@ -4,11 +4,11 @@ import cv2
 from PIL import ImageOps, Image
 from keras_preprocessing.image import ImageDataGenerator
 
-from src.config import seed, batch_size, img_size, initialise_run
-from src.data_utils import annotation_preprocessor
+from config import seed, batch_size, img_size, initialise_run
+from data_utils import annotation_preprocessor
 
 
-def get_image_annotation_generators(subset='validation', image_directory='data/train/images', annotation_directory='data/train/annotations_old', validation_split=0.2):
+def get_image_annotation_generators(subset='validation', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0.2):
     data_gen_arcs = dict(
         rotation_range=40,
         width_shift_range=0.3,
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     train_x, train_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
     test_x, test_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
 
-    create_augmented_dataset(train_x, train_y, 'data/vagus_dataset_5/train', n=10)
-    create_augmented_dataset(test_x, test_y, 'data/vagus_dataset_5/test', n=10)
+    create_augmented_dataset(train_x, train_y, 'data/vagus_dataset_5/train', n=300)
+    create_augmented_dataset(test_x, test_y, 'data/vagus_dataset_5/test', n=20)
 
 """
 

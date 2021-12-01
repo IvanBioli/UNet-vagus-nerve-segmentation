@@ -6,7 +6,7 @@ import numpy as np
 from PIL import ImageOps, Image
 from tensorflow import keras
 
-from src.post_processing import identify_fasicle_regions
+from post_processing import identify_fasicle_regions
 
 
 def display_annotation_high_contrast(fpath):
@@ -81,6 +81,21 @@ def show_combined_result(model_input, y_true, y_pred, i=0, iou_score=None, save_
 
     plt.show()
 
+def show_overlay_result(model_input, y_true, y_pred, i=0, iou_score=None, save_file=None):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+
+    ax1.imshow(model_input[i, :, :, :]/255)
+    ax1.set_title(f'Input image', fontsize=10)
+
+    ax2.imshow(y_true[i, :, :, 0], cmap='gray', interpolation='none')
+    ax2.imshow(y_pred[i, :, :], cmap='viridis', alpha=0.5, interpolation='none')
+
+    ax2.set_title(f'True annotation: White      Prediction: Yellow\nIOU: {str(iou_score)}', fontsize=10)
+    
+    if save_file:
+        plt.savefig(save_file)
+
+    plt.show()
 
 def visualise_one_prediction(model, input_image):
     print('Input image shape: ', input_image.shape)
