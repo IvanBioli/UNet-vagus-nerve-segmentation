@@ -50,6 +50,7 @@ def run_train_without_augmentation(dataset_folder, model_save_file='model_checkp
     print(f'Create train dataset with batch_size={batch_size}, img_size={img_size}, n={len(train_input_img_paths)}')
     train_data = VagusDataLoader(batch_size, img_size, train_input_img_paths, train_target_img_paths)
     print(f'Create validation dataset with batch_size={batch_size}, img_size={img_size}, n={len(train_input_img_paths)}')
+    print('Validation images: ', val_input_img_paths)
     val_data = VagusDataLoader(batch_size, img_size, val_input_img_paths, val_target_img_paths)
 
     print('Training model')
@@ -106,8 +107,8 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
 
 if __name__ == '__main__':
     initialise_run()
-    model_save_file = 'model_checkpoints/model_checkpoint9.h5'
-    # m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_7', model_save_file=model_save_file)
+    model_save_file = 'model_checkpoints/model_checkpoint11.h5'
+    m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_7', model_save_file=model_save_file)
     output_predictions(trained_model_checkpoint=model_save_file)
     # run_train_with_augmentation()
     print('Done')

@@ -3,10 +3,10 @@ import os
 batch_size = 1
 img_size = (160, 160)
 num_classes = 2  # TODO change num classes to 2
-val_samples = 7
-epochs = 5
+val_samples = 10
+epochs = 40
 
-debug = False
+debug = True
 
 seed = 1
 train_sample_size = 62

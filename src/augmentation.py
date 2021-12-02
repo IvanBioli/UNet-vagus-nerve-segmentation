@@ -1,6 +1,7 @@
 import os
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 from keras_preprocessing.image import ImageDataGenerator, apply_affine_transform
 
@@ -9,8 +10,9 @@ from data_utils import annotation_preprocessor, image_preprocessor
 
 
 def get_random_affine_transformation():
-    transform = lambda img: img
-    # transform = lambda img: apply_affine_transform(img, theta=np.random.randint(0, 40), fill_mode='constant', cval=1)
+    # transform = lambda img: img
+    theta_rand = np.random.randint(0, 40)
+    transform = lambda img: apply_affine_transform(img, theta=theta_rand, fill_mode='constant', cval=1)
     return transform
 
 
