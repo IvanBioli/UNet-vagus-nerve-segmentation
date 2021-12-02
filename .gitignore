@@ -2,6 +2,6 @@
 .idea
 data/vagus_dataset_*
 data/*
-model_checkpoints/
+model_checkpoints/model_*
 notebooks/.ipynb_checkpoints
 src/__pycache__
