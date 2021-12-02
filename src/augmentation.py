@@ -5,7 +5,7 @@ from PIL import ImageOps, Image
 from keras_preprocessing.image import ImageDataGenerator, apply_affine_transform
 
 from config import seed, batch_size, img_size, initialise_run
-from data_utils import annotation_preprocessor
+from data_utils import annotation_preprocessor, image_preprocessor
 
 import numpy as np
 
@@ -28,7 +28,7 @@ def get_image_annotation_generators(subset='validation', image_directory='data/t
         validation_split=validation_split,
     )
 
-    img_datagen = ImageDataGenerator(**data_gen_arcs)
+    img_datagen = ImageDataGenerator(**data_gen_arcs, preprocessing_function=image_preprocessor)
 
     anno_datagen = ImageDataGenerator(**data_gen_arcs, preprocessing_function=annotation_preprocessor)
 

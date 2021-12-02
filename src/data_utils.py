@@ -66,6 +66,7 @@ def annotations_convert(folder):
 def annotation_preprocessor(annotation):
     """ Converts JPEG annotation to image with [0, 1] values for model input. """
     # return annotation
+    assert annotation.shape[-1] == 1  # assert 1 channel
     threshold = 127
     _, annotation = cv2.threshold(annotation, threshold, 255, cv2.THRESH_BINARY)
     annotation = annotation.astype(float) / 255
@@ -74,6 +75,12 @@ def annotation_preprocessor(annotation):
     return annotation
 
 
+def image_preprocessor(image):
+    """ Convert JPEG image with values between [0, 255] to normalised images with values between [0, 1] """
+    assert image.shape[-1] == 3  # assert 3 channels
+    image = image.astype(float) / 255
+    assert np.max(image) <= 1 and np.min(image) >= 0
+    return image
 
 # def convert_annotation_test(im):
 #     print(im.shape)

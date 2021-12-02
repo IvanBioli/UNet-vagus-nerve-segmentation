@@ -25,7 +25,7 @@ def model_iou(trained_model, test_img_generator, test_anno_generator, show_image
     if show_images:
         for i in range(batch_size):
             # show_combined_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score, save_file='results/combined1.png')
-            show_overlay_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score, save_file='results/overlay1.png')
+            show_overlay_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score, save_file='results/overlay2.png')
             # show_original_image(x, i=i)
             # show_original_annotation(y_true, i=i)
             # show_predicted_annotation(y_pred, i=i)

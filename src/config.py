@@ -4,13 +4,13 @@ batch_size = 1
 img_size = (512, 512)
 num_classes = 2  # TODO change num classes to 2
 val_samples = 30
-epochs = 5
+epochs = 15
 
 debug = False
 
 seed = 1
-train_sample_size = 64
-val_sample_size = 12
+train_sample_size = 62
+val_sample_size = 15
 steps_per_epoch = train_sample_size / batch_size
 validation_steps = val_sample_size / batch_size
 
