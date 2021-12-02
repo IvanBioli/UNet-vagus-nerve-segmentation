@@ -1,17 +1,18 @@
 import os
 
 import cv2
-from PIL import ImageOps, Image
+import numpy as np
 from keras_preprocessing.image import ImageDataGenerator, apply_affine_transform
 
 from config import seed, batch_size, img_size, initialise_run
 from data_utils import annotation_preprocessor, image_preprocessor
 
-import numpy as np
 
 def get_random_affine_transformation():
-    transform = lambda img: apply_affine_transform(img,theta=np.random.randint(0, 40))
+    transform = lambda img: img
+    # transform = lambda img: apply_affine_transform(img, theta=np.random.randint(0, 40), fill_mode='constant', cval=1)
     return transform
+
 
 def get_image_annotation_generators(subset='validation', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0.2):
     data_gen_arcs = dict(

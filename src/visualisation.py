@@ -4,6 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import ImageOps, Image
+from skimage import color
 from tensorflow import keras
 
 from post_processing import identify_fasicle_regions
@@ -96,6 +97,17 @@ def show_overlay_result(model_input, y_true, y_pred, i=0, iou_score=None, save_f
         plt.savefig(save_file)
 
     plt.show()
+
+
+def show_result_test(image_resized, mask_resized):
+    fig, axs = plt.subplots(1, 3, figsize=(12, 12))
+    axs[0].imshow(image_resized)
+    axs[1].imshow(mask_resized)
+    overlaying_image = color.label2rgb(mask_resized, image_resized, bg_label=0)
+    axs[2].imshow(overlaying_image)
+    plt.show()
+    plt.pause(1)
+
 
 def visualise_one_prediction(model, input_image):
     print('Input image shape: ', input_image.shape)

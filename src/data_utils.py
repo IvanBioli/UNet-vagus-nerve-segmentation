@@ -1,11 +1,8 @@
 import os
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
-from PIL import ImageOps
 from pdf2image import convert_from_path
-from tensorflow import keras
 
 
 def dataset_convert(input_folder, output_folder):
@@ -82,6 +79,7 @@ def image_preprocessor(image):
     assert np.max(image) <= 1 and np.min(image) >= 0
     return image
 
+
 # def convert_annotation_test(im):
 #     print(im.shape)
 #     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -106,11 +104,6 @@ def image_preprocessor(image):
 #     print(np.unique(im))
 
 
-
-
-
-
-
 def input_target_path_pairs(directory, print_examples=48):
     """ Create image target pairs """
     input_dir = os.path.join(os.getcwd(), directory, 'images')
@@ -122,7 +115,7 @@ def input_target_path_pairs(directory, print_examples=48):
     for directory, paths in [(input_dir, input_img_paths), (target_dir, target_img_paths)]:
         for fname in os.listdir(directory):
             fpath = os.path.join(directory, fname)
-            if fname.endswith('.jpg') or fname.endswith('.bmp'):
+            if fname.endswith('.npy'):
                 paths.append(fpath)
             else:
                 raise ValueError(f'Invalid file format {fpath}.')
