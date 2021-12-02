@@ -25,6 +25,7 @@ class VagusDataLoader(keras.utils.Sequence):
         batch_target_img_paths = self.target_img_paths[i : i + self.batch_size]
         x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
         for j, path in enumerate(batch_input_img_paths):
+            # TODO: normalize
             img = load_img(path, target_size=self.img_size)
             x[j] = img
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")

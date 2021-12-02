@@ -11,6 +11,8 @@ from augmentation import get_image_annotation_generators
 from eval import model_iou
 from visualisation import visualise_one_prediction
 
+import numpy as np
+
 
 def train(train_data, val_data, save_location):
     model = get_model(img_size, num_classes)
@@ -60,6 +62,25 @@ def run_train_without_augmentation(dataset_folder, model_save_file='model_checkp
     print('Training complete')
     return trained_model
 
+def run_train_with_augmentation():
+
+    train_x, train_y = get_image_annotation_generators(subset='training')
+    val_x, val_y = get_image_annotation_generators(subset='validation')
+    train_gen = zip(train_x, train_y)
+    val_gen = zip(val_x, val_y)
+
+    train(train_gen, val_gen, save_location='model_checkpoints/model_checkpoint7.h5')
+
+
+    # x = train_x.next()
+    # y = train_y.next()
+    # print(x.shape, np.unique(x))
+    # print(y.shape, np.unique(y))
+    # import matplotlib.pyplot as plt
+    # plt.imshow(x[0, :, :, :])
+    # plt.show()
+
+    
 
 def output_predictions(trained_model=None, trained_model_checkpoint=None):
     if trained_model is None and trained_model_checkpoint is None:
@@ -91,7 +112,8 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
 
 if __name__ == '__main__':
     initialise_run()
-    model_save_file = 'model_checkpoints/model_checkpoint6.h5'
+    model_save_file = 'model_checkpoints/model_checkpoint7.h5'
     # m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_5/train', model_save_file=model_save_file)
     output_predictions(trained_model_checkpoint=model_save_file)
+    # run_train_with_augmentation()
     print('Done')
