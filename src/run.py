@@ -107,8 +107,8 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
 
 if __name__ == '__main__':
     initialise_run()
-    model_save_file = 'model_checkpoints/model_checkpoint11.h5'
-    m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_7', model_save_file=model_save_file)
+    model_save_file = 'model_checkpoints/transforms512.h5'
+    m = run_train_without_augmentation(dataset_folder='data/vagus_dataset_6', model_save_file=model_save_file)
     output_predictions(trained_model_checkpoint=model_save_file)
     # run_train_with_augmentation()
     print('Done')

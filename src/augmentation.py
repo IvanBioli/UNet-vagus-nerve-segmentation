@@ -1,7 +1,7 @@
 import os
+import random
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 from keras_preprocessing.image import ImageDataGenerator, apply_affine_transform
 
@@ -10,10 +10,22 @@ from data_utils import annotation_preprocessor, image_preprocessor
 
 
 def get_random_affine_transformation():
-    # transform = lambda img: img
-    theta_rand = np.random.randint(0, 40)
-    transform = lambda img: apply_affine_transform(img, theta=theta_rand, fill_mode='constant', cval=1)
-    return transform
+    def sample_rand_float(multiplier=0.2):
+        return (np.random.rand() - 0.5) * multiplier * 2
+
+    affine_transform_args = dict(
+        theta=np.random.randint(0, 40),
+        tx=int(sample_rand_float() * img_size[1]),
+        ty=int(sample_rand_float() * img_size[1]),
+        shear=np.random.randint(0, 30),
+        zx=np.random.uniform(0.7, 1),
+        zy=np.random.uniform(0.7, 1),
+    )
+    transformations = [
+        lambda img: apply_affine_transform(img, fill_mode='constant', cval=1, **affine_transform_args)
+    ]
+
+    return random.choice(transformations)
 
 
 def get_image_annotation_generators(subset='validation', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0.2):
@@ -72,12 +84,15 @@ def create_augmented_dataset(img_generator, anno_generator, folder, n=300):
 
 if __name__ == '__main__':
     initialise_run()
-    # 0 validation images here
-    train_x, train_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
-    test_x, test_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
+    # # 0 validation images here
+    # train_x, train_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
+    # test_x, test_y = get_image_annotation_generators(subset='training', image_directory='data/train/images', annotation_directory='data/train/annotations', validation_split=0)
+    #
+    # create_augmented_dataset(train_x, train_y, 'data/vagus_dataset_5/train', n=300)
+    # create_augmented_dataset(test_x, test_y, 'data/vagus_dataset_5/test', n=20)
 
-    create_augmented_dataset(train_x, train_y, 'data/vagus_dataset_5/train', n=300)
-    create_augmented_dataset(test_x, test_y, 'data/vagus_dataset_5/test', n=20)
+    # t = get_random_affine_transformation()
+    # plt.imshow()
 
 """
 

@@ -43,13 +43,11 @@ class VagusDataLoader(keras.utils.Sequence):
             y[j] = augmented_annotation
         if i == 0 and debug:
             print(f'Data loader first x, y pair - x shape: {x.shape}, x min max: {np.min(x)}, {np.max(x)}, y shape: {y.shape}, y values: {np.unique(y, return_counts=True)}')
-
-        # print('x')
-        # plt.imshow(x[0, :, :, :])
-        # plt.show()
-        # print('y')
-        # plt.imshow(y[0, :, :, 0])
-        # plt.show()
-        # assert len(np.unique(y)) == 2
-
+            # print('x')
+            # plt.imshow(x[0, :, :, :])
+            # plt.show()
+            # print('y')
+            # plt.imshow(y[0, :, :, 0])
+            # plt.show()
+        assert len(np.unique(y)) == 2
         return x, y

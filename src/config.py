@@ -1,10 +1,10 @@
 import os
 
 batch_size = 1
-img_size = (160, 160)
+img_size = (512, 512)
 num_classes = 2  # TODO change num classes to 2
 val_samples = 10
-epochs = 40
+epochs = 100
 
 debug = True
 
