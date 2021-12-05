@@ -2,6 +2,8 @@
 .idea
 data/vagus_dataset_*
 data/*
+figures/*
 model_checkpoints/model_*
 notebooks/.ipynb_checkpoints
 src/__pycache__
+.spyproject/*
