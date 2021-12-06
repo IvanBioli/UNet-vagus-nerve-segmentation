@@ -14,6 +14,7 @@ val_sample_size = 15
 steps_per_epoch = train_sample_size / batch_size
 validation_steps = val_sample_size / batch_size
 
+minimum_fascicle_area=15
 
 def initialise_run():
     """ Machine specific run initialisation """

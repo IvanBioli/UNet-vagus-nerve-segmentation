@@ -7,7 +7,8 @@ from PIL import ImageOps, Image
 from skimage import color
 from tensorflow import keras
 
-from post_processing import identify_fasicle_regions
+from src.post_processing import identify_fasicle_regions
+# from post_processing import identify_fasicle_regions
 
 
 def display_annotation_high_contrast(fpath):
