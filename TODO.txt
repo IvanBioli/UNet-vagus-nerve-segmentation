@@ -5,10 +5,10 @@
 - Distribution of area of fascicles (in the original shape) (CHECK postropcessing.py - KHANH)
 - Augment with colour and fascicles (UMER)
 - Augment with cropping (be careful) (UMER)
-- Compute the distance between fascicles (IVAN)
-- Morphological opening and closing (IVAN)
-- Watershed segmentation (IVAN)
-- Understand if there are specific metrics that might penalize errors on borders
-- https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+- Compute the distance between fascicles (IVAN) (QUITE DIFFICULT, NO PACKAGE FOUND)
+- Morphological opening and closing (IVAN) -- DONE
+- Watershed segmentation (IVAN) -- DONE
+- Understand if there are specific metrics that might penalize errors on borders (IVAN) -- DONE
+- https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html (IVAN) -- DONE
 - https://www.frontiersin.org/articles/10.3389/fnins.2021.685872/full
 - https://www.nature.com/articles/s41596-020-0377-6
