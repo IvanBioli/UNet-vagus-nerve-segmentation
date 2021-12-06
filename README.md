@@ -17,3 +17,13 @@ Epoch 20 vagus dataset 7 no transforms: loss: 0.0805 - val_loss: 0.3679
 * test model on unlabelled images (from same folder as annotation and different folder as annotation)
 * start on write report Ivan
 * more results / analysis of model (multiple predictions out of sample with distribution of IOU scores + number of regions)
+
+### IDEAS list
+* Try dice loss for training
+* Try binary cross entropy
+* Try dice and cross-entropy loss weighted 
+* Try all weighted
+(using Dice loss to capture the small details in the image and the borders 
+and cross-entropy loss for the wider details such as the cell interiors)
+* Try Adam as an optimizer (or others, just to show that we did some experiments also on this)
+* Add the validation loss to the plots
