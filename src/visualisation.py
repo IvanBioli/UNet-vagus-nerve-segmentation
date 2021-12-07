@@ -1,5 +1,3 @@
-import os
-
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +5,10 @@ from PIL import ImageOps, Image
 from skimage import color
 from tensorflow import keras
 
+from src.config import initialise_run
 from src.post_processing import identify_fasicle_regions
+
+
 # from post_processing import identify_fasicle_regions
 
 
@@ -83,17 +84,18 @@ def show_combined_result(model_input, y_true, y_pred, i=0, iou_score=None, save_
 
     plt.show()
 
+
 def show_overlay_result(model_input, y_true, y_pred, i=0, iou_score=None, save_file=None):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
 
-    ax1.imshow(model_input[i, :, :, :]/255)
+    ax1.imshow(model_input[i, :, :, :] / 255)
     ax1.set_title(f'Input image', fontsize=10)
 
     ax2.imshow(y_true[i, :, :, 0], cmap='gray', interpolation='none')
     ax2.imshow(y_pred[i, :, :], cmap='viridis', alpha=0.5, interpolation='none')
 
     ax2.set_title(f'True annotation: White      Prediction: Yellow\nIOU: {str(iou_score)}', fontsize=10)
-    
+
     if save_file:
         plt.savefig(save_file)
 
@@ -110,69 +112,15 @@ def show_result_test(image_resized, mask_resized):
     plt.pause(1)
 
 
-def visualise_one_prediction(model, input_image):
-    print('Input image shape: ', input_image.shape)
-    # plt.imshow(input_image)
-    show_original_image(input_image)
-
-    prediction = model.predict(input_image)
-    print('Model output shape: ', prediction.shape)
-    prediction = np.argmax(prediction, axis=-1)
-    prediction = prediction[0, :, :]
-    print('Prediction shape: ', prediction.shape)
-    plt.imshow(prediction)
+def plot_loss_graph(loss_file):
+    losses = np.load(loss_file)
+    plt.plot(losses[0], label='training loss')
+    plt.plot(losses[1], label='validation loss')
+    plt.legend()
     plt.show()
 
-
-def compare_augmented_image_annotations(img_generator, anno_generator):
-    for i in range(1):
-        x = img_generator.next()
-        plt.imshow(x[0, :, :, :] / 255)
-        plt.show()
-        y = anno_generator.next()
-        plt.imshow(y[0, :, :, 0])
-        plt.show()
-
-
-def compare_dataloader_image_annotations(train_dataloader, val_dataloader):
-    for i in range(1):
-        x, y = train_dataloader[i]
-        plt.imshow(x[0, :, :, :] / 255)
-        plt.show()
-        plt.imshow(y[0, :, :, 0])
-        plt.show()
-
-"""
-TODO modify dimensions, transparent overlay, 
-"""
 
 if __name__ == '__main__':
-    display_annotation_high_contrast('data/vagus_dataset_2/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0100.bmp')
-
-"""
-    def get_prediction(i):
-        mask = np.argmax(test_predictions[i], axis=-1)
-        mask = np.expand_dims(mask, axis=-1)
-        img = PIL.ImageOps.autocontrast(keras.preprocessing.image.array_to_img(mask))
-        return img
-
-    i = 0
-
-    # Display input image
-    original_image = mpimg.imread(val_input_img_paths[i])
-    original_image_plot = plt.imshow(original_image)
-
-    # Display ground-truth target mask
-    # original_mask = mpimg.imread(val_target_img_paths[i])
-    # original_mask_plot = plt.imshow(original_mask)
-    # plt.show()
-    original_mask = PIL.ImageOps.autocontrast(load_img(val_target_img_paths[i]))
-
-    # Display mask predicted by our model
-    prediction = get_prediction(i)  # Note that the model only sees inputs at 150x150.
-
-    plt.show()
-"""
-
-
-## TODO: distribution of metrics
+    initialise_run()
+    # display_annotation_high_contrast('data/vagus_dataset_2/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0100.bmp')
+    plot_loss_graph('model_losses/cv_aug_512.npy')

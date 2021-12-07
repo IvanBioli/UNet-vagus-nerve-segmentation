@@ -8,7 +8,10 @@ from eval import model_iou, one_prediction_iou
 from model import get_model
 
 
-def train(train_img_target_pairs, save_location, cross_validation_folds=10):
+def train(model_id, train_img_target_pairs, cross_validation_folds=10):
+    losses = []
+    validation_losses = []
+
     model = get_model(img_size, num_classes)
 
     # Configure the model for training.
@@ -17,7 +20,7 @@ def train(train_img_target_pairs, save_location, cross_validation_folds=10):
     model.compile(optimizer="rmsprop", loss="sparse_categorical_crossentropy")
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(save_location, save_best_only=True)
+        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_best_only=True)
     ]
 
     (img_paths, target_paths) = train_img_target_pairs
@@ -43,7 +46,15 @@ def train(train_img_target_pairs, save_location, cross_validation_folds=10):
             val_data = VagusDataLoader(batch_size, img_size, val_x, val_y)
 
             # Fit to current train and validation split
-            model.fit(train_data, epochs=1, validation_data=val_data, callbacks=callbacks)
+            model_history = model.fit(train_data, epochs=1, validation_data=val_data, callbacks=callbacks)
+
+            losses.append(model_history.history['loss'])
+            validation_losses.append(model_history.history['val_loss'])
+
+    print('Finished training')
+
+    losses_save_location = f'model_losses/{model_id}'
+    np.save(losses_save_location, np.array([losses, validation_losses]))
 
     return model
 
@@ -80,7 +91,7 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
 if __name__ == '__main__':
     initialise_run()
     model_save_file = 'model_checkpoints/cv_aug_512.h5'
-    m = train(train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_6'), save_location=model_save_file)
+    m = train(model_id='cv_aug_512', train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_6'))
     # output_predictions(trained_model_checkpoint=model_save_file)
     # run_train_with_augmentation()
     print('Done')
