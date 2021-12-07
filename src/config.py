@@ -6,7 +6,9 @@ num_classes = 2  # TODO change num classes to 2
 val_samples = 10
 epochs = 100
 
-debug = True
+debug = False
+debug_img_filepath = 'data/vagus_dataset_6/images/img_1.npy'
+
 
 seed = 1
 train_sample_size = 62
@@ -14,7 +16,7 @@ val_sample_size = 15
 steps_per_epoch = train_sample_size / batch_size
 validation_steps = val_sample_size / batch_size
 
-minimum_fascicle_area=15
+minimum_fascicle_area = 15
 
 def initialise_run():
     """ Machine specific run initialisation """

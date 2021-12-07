@@ -10,13 +10,11 @@ Epoch 20 vagus dataset 7 no transforms: loss: 0.0805 - val_loss: 0.3679
 
 
 ### TODO list
-* increase resolution Umer
-* add more transformations Umer
 * cross validation 
 * visualisation + prediction (should take in the same format - normalised rgb images) Ivan
 * test model on unlabelled images (from same folder as annotation and different folder as annotation)
-* start on write report Ivan
 * more results / analysis of model (multiple predictions out of sample with distribution of IOU scores + number of regions)
+* compute minimum distance between fasicle regions 
 
 ### IDEAS list
 * Try dice loss for training

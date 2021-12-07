@@ -5,6 +5,10 @@ import numpy as np
 from pdf2image import convert_from_path
 
 
+def is_annotation(annotation):
+    return (np.unique(annotation) == np.array([0, 1])).all() and annotation.dtype == np.dtype('uint8')
+
+
 def dataset_convert(input_folder, output_folder):
     """ Convert google drive vagus_dataset_1 into model ready format """
     input_folder = os.path.join(os.getcwd(), input_folder)

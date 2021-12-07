@@ -10,6 +10,8 @@ from src.augmentation import get_random_affine_transformation
 
 import matplotlib.pyplot as plt
 
+from src.data_utils import is_annotation
+
 
 class VagusDataLoader(keras.utils.Sequence):
     """Helper to iterate over the data (as Numpy arrays)."""
@@ -37,18 +39,25 @@ class VagusDataLoader(keras.utils.Sequence):
             annotation = np.expand_dims(annotation, axis=2)
             current_transform = get_random_affine_transformation()
             augmented_img = current_transform(img)
-            augmented_annotation = current_transform(annotation)
+            augmented_annotation = current_transform(annotation, is_annotation=True)
             augmented_annotation = cv2.threshold(augmented_annotation, 0.5, 1, cv2.THRESH_BINARY)[1]
             augmented_annotation = np.expand_dims(augmented_annotation, axis=2)
             x[j] = augmented_img
             y[j] = augmented_annotation
+
+        # Useful debug code
         if i == 0 and debug:
             print(f'Data loader first x, y pair - x shape: {x.shape}, x min max: {np.min(x)}, {np.max(x)}, y shape: {y.shape}, y values: {np.unique(y, return_counts=True)}')
-            # print('x')
-            # plt.imshow(x[0, :, :, :])
-            # plt.show()
-            # print('y')
-            # plt.imshow(y[0, :, :, 0])
-            # plt.show()
-        assert len(np.unique(y)) == 2
+            print('x')
+            plt.imshow(x[0, :, :, :])
+            plt.show()
+            print('y')
+            plt.imshow(y[0, :, :, 0])
+            plt.show()
+
+        # Final checks on tensor formats
+        assert is_annotation(y), print(np.unique(y))
+        assert np.max(x) <= 1 and np.min(x) >= 0, print(np.unique(x))
+        assert x.shape[-1] == 3
+
         return x, y
