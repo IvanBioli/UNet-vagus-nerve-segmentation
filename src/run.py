@@ -1,14 +1,14 @@
 import numpy as np
 from tensorflow import keras
 
-from config import img_size, num_classes, batch_size, epochs, steps_per_epoch, validation_steps, val_samples, initialise_run
+from config import img_size, num_classes, batch_size, epochs, steps_per_epoch, validation_steps, initialise_run
 from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from eval import model_iou, one_prediction_iou
 from model import get_model
 
 
-def train(model_id, train_img_target_pairs, cross_validation_folds=10):
+def train(model_id, train_img_target_pairs, val_img_target_pairs=None, cross_validation_folds=10):
     losses = []
     validation_losses = []
 
@@ -17,7 +17,11 @@ def train(model_id, train_img_target_pairs, cross_validation_folds=10):
     # Configure the model for training.
     # We use the "sparse" version of categorical_crossentropy
     # because our target data is integers.
-    model.compile(optimizer="rmsprop", loss="sparse_categorical_crossentropy")
+    #_optimizer = keras.optimizers.RMSprop()
+    _optimizer = keras.optimizers.Adam()
+    _loss = keras.losses.SparseCategoricalCrossentropy() 
+    #+ keras.losses.SparseCategoricalCrossentropy()
+    model.compile(optimizer=_optimizer, loss=_loss)
 
     callbacks = [
         keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_best_only=True)
@@ -26,30 +30,52 @@ def train(model_id, train_img_target_pairs, cross_validation_folds=10):
     (img_paths, target_paths) = train_img_target_pairs
     assert len(img_paths) == len(target_paths)
 
-    num_examples_per_fold = len(img_paths) // cross_validation_folds
 
-    for epoch in range(0, epochs, cross_validation_folds):
-        for fold_num in range(cross_validation_folds):
-            last_idx = (fold_num + 1) * num_examples_per_fold if fold_num < cross_validation_folds - 1 else len(img_paths)
-            val_indices = [i for i in range(fold_num * num_examples_per_fold, last_idx)]
-            train_x = [img_paths[i] for i in range(len(img_paths)) if i not in val_indices]
-            train_y = [target_paths[i] for i in range(len(target_paths)) if i not in val_indices]
-            val_x = [img_paths[i] for i in val_indices]
-            val_y = [target_paths[i] for i in val_indices]
+    if val_img_target_pairs:
+        print('Running without cross validation.')
 
-            assert len(train_x) == len(train_y)
-            assert len(val_x) == len(val_y)
+        train_x, train_y = img_paths, target_paths
+        val_x, val_y = val_img_target_pairs
 
-            print(f'Create train dataset with batch_size={batch_size}, img_size={img_size}, n={len(train_x)}')
-            train_data = VagusDataLoader(batch_size, img_size, train_x, train_y)
-            print(f'Create validation dataset with batch_size={batch_size}, img_size={img_size}, n={len(val_x)}')
-            val_data = VagusDataLoader(batch_size, img_size, val_x, val_y)
+        assert len(train_x) == len(train_y)
+        assert len(val_x) == len(val_y)
 
-            # Fit to current train and validation split
-            model_history = model.fit(train_data, epochs=1, validation_data=val_data, callbacks=callbacks)
+        print(f'Create train dataset with batch_size={batch_size}, img_size={img_size}, n={len(train_x)}')
+        train_data = VagusDataLoader(batch_size, img_size, train_x, train_y)
+        print(f'Create validation dataset with batch_size={batch_size}, img_size={img_size}, n={len(val_x)}')
+        val_data = VagusDataLoader(batch_size, img_size, val_x, val_y)
 
-            losses.append(model_history.history['loss'])
-            validation_losses.append(model_history.history['val_loss'])
+        # Fit to current train and validation split
+        model_history = model.fit(train_data, epochs=epochs, validation_data=val_data, callbacks=callbacks)
+
+        losses = model_history.history['loss']
+        validation_losses = model_history.history['val_loss']
+    else:
+        print('Running with cross validation.')
+        num_examples_per_fold = len(img_paths) // cross_validation_folds
+
+        for epoch in range(0, epochs, cross_validation_folds):
+            for fold_num in range(cross_validation_folds):
+                last_idx = (fold_num + 1) * num_examples_per_fold if fold_num < cross_validation_folds - 1 else len(img_paths)
+                val_indices = [i for i in range(fold_num * num_examples_per_fold, last_idx)]
+                train_x = [img_paths[i] for i in range(len(img_paths)) if i not in val_indices]
+                train_y = [target_paths[i] for i in range(len(target_paths)) if i not in val_indices]
+                val_x = [img_paths[i] for i in val_indices]
+                val_y = [target_paths[i] for i in val_indices]
+
+                assert len(train_x) == len(train_y)
+                assert len(val_x) == len(val_y)
+
+                print(f'Create train dataset with batch_size={batch_size}, img_size={img_size}, n={len(train_x)}')
+                train_data = VagusDataLoader(batch_size, img_size, train_x, train_y)
+                print(f'Create validation dataset with batch_size={batch_size}, img_size={img_size}, n={len(val_x)}')
+                val_data = VagusDataLoader(batch_size, img_size, val_x, val_y)
+
+                # Fit to current train and validation split
+                model_history = model.fit(train_data, epochs=1, validation_data=val_data, callbacks=callbacks)
+
+                losses.append(model_history.history['loss'])
+                validation_losses.append(model_history.history['val_loss'])
 
     print('Finished training')
 
@@ -90,8 +116,13 @@ def output_predictions(trained_model=None, trained_model_checkpoint=None):
 
 if __name__ == '__main__':
     initialise_run()
-    model_save_file = 'model_checkpoints/cv_aug_512.h5'
-    m = train(model_id='cv_aug_512', train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_6'))
+    #m = train(model_id='Adam_SCC_512_default', train_img_target_pairs=input_target_path_pairs('data/training/520')) # With cross validation
+    # Without cross validation
+    m = train(
+        model_id='Adam_SCC_512_default', 
+        train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/train'), 
+        val_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/validation')
+    )
     # output_predictions(trained_model_checkpoint=model_save_file)
     # run_train_with_augmentation()
     print('Done')
