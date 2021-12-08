@@ -5,8 +5,11 @@ from PIL import ImageOps, Image
 from skimage import color
 from tensorflow import keras
 
-from src.config import initialise_run
-from src.post_processing import identify_fasicle_regions
+
+# from src.config import initialise_run
+# from src.post_processing import identify_fasicle_regions
+from config import initialise_run
+from post_processing import identify_fasicle_regions
 
 
 # from post_processing import identify_fasicle_regions

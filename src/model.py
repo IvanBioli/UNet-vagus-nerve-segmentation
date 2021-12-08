@@ -1,8 +1,8 @@
 from tensorflow.keras import layers
 from tensorflow import keras
 
-from src.config import batch_size
-# from config import batch_size
+# from src.config import batch_size
+from config import batch_size
 
 
 def get_model(img_size, num_classes):

@@ -22,7 +22,7 @@ def initialise_run():
     """ Machine specific run initialisation """
     # devices = tf.config.experimental.list_physical_devices('GPU')
     # tf.config.experimental.set_memory_growth(devices[0], True)
-    os.chdir('/home/albion/code/EPFL/ml/nerve-segmentation')
-    # os.chdir('D:/EPFL/ML/projects/nerve-segmentation/')
+    # os.chdir('/home/albion/code/EPFL/ml/nerve-segmentation')
+    os.chdir('D:/EPFL/ML/projects/nerve-segmentation/')
     os.makedirs('model_checkpoints', exist_ok=True)
     os.makedirs('model_losses', exist_ok=True)

@@ -3,14 +3,14 @@ from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
 
-from src.config import debug
-from src.augmentation import get_random_affine_transformation
-# from config import debug
-# from augmentation import get_random_affine_transformation
+# from src.config import debug
+# from src.augmentation import get_random_affine_transformation
+from config import debug
+from augmentation import get_random_affine_transformation
 
 import matplotlib.pyplot as plt
 
-from src.data_utils import is_annotation
+from data_utils import is_annotation
 
 
 class VagusDataLoader(keras.utils.Sequence):
