@@ -3,8 +3,10 @@ import os
 batch_size = 1
 img_size = (512, 512)
 num_classes = 2
-val_samples = 10
-epochs = 2  # Can only be a multiple of 10 at the moment
+#img_size = (160, 160)
+num_classes = 2  # TODO change num classes to 2
+#val_samples = 10
+epochs = 100  # Can only be a multiple of 10 at the moment
 
 debug = False
 debug_img_filepath = 'data/vagus_dataset_6/images/img_1.npy'
@@ -23,6 +25,7 @@ def initialise_run():
     # devices = tf.config.experimental.list_physical_devices('GPU')
     # tf.config.experimental.set_memory_growth(devices[0], True)
     # os.chdir('/home/albion/code/EPFL/ml/nerve-segmentation')
-    os.chdir('D:/EPFL/ML/projects/nerve-segmentation/')
+    # os.chdir('D:/EPFL/ML/projects/nerve-segmentation/')
+    os.chdir('C:/Users/ivanb/Documents/GitHub/ML Project 2')
     os.makedirs('model_checkpoints', exist_ok=True)
     os.makedirs('model_losses', exist_ok=True)

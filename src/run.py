@@ -6,8 +6,7 @@ from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from eval import model_iou, one_prediction_iou
 from model import get_model
-from loss import nerve_seg_custom_loss
-
+from loss import sparse_cce_dice_combination_loss
 
 def train(model_id, train_img_target_pairs, val_img_target_pairs=None, cross_validation_folds=10):
     losses = []
@@ -18,10 +17,10 @@ def train(model_id, train_img_target_pairs, val_img_target_pairs=None, cross_val
     # Configure the model for training.
     # We use the "sparse" version of categorical_crossentropy
     # because our target data is integers.
-    #_optimizer = keras.optimizers.RMSprop()
-    _optimizer = keras.optimizers.Adam()
-    _loss = nerve_seg_custom_loss
-    #+ keras.losses.SparseCategoricalCrossentropy()
+    _optimizer = keras.optimizers.RMSprop()
+    #_optimizer = keras.optimizers.Adam()
+    #_loss = sparse_cce_dice_combination_loss
+    _loss = keras.losses.SparseCategoricalCrossentropy()
     model.compile(optimizer=_optimizer, loss=_loss)
 
     callbacks = [
@@ -120,9 +119,9 @@ if __name__ == '__main__':
     #m = train(model_id='Adam_SCC_512_default', train_img_target_pairs=input_target_path_pairs('data/training/520')) # With cross validation
     # Without cross validation
     m = train(
-        model_id='test_loss', 
-        train_img_target_pairs=input_target_path_pairs('data/vagus_dataset/train'), 
-        val_img_target_pairs=input_target_path_pairs('data/vagus_dataset/validation')
+        model_id='RMSProp_SCC_512_default',
+        train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/train'), 
+        val_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/validation')
     )
     # output_predictions(trained_model_checkpoint=model_save_file)
     # run_train_with_augmentation()
