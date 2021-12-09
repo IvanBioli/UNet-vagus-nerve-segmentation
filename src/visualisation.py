@@ -1,3 +1,5 @@
+import pickle
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -115,15 +117,27 @@ def show_result_test(image_resized, mask_resized):
     plt.pause(1)
 
 
-def plot_loss_graph(loss_file):
-    losses = np.load(loss_file)
-    plt.plot(losses[0], label='training loss')
-    plt.plot(losses[1], label='validation loss')
-    plt.legend()
+def plot_model_losses_and_metrics(loss_filepath):
+
+    with open(loss_filepath, 'rb') as loss_file:
+        model_details = pickle.load(loss_file)
+
+    train_keys = sorted([x for x in model_details.keys() if not x.startswith('val')])
+    val_keys = sorted([x for x in model_details.keys() if x.startswith('val')])
+
+    print('Number of datapoints: ', len(model_details['loss']))
+
+    fig, axs = plt.subplots(len(train_keys))
+
+    for idx, (t_k, v_k) in enumerate(zip(train_keys, val_keys)):
+        axs[idx].plot(model_details[t_k], label=t_k)
+        axs[idx].plot(model_details[v_k], label=v_k)
+        axs[idx].legend()
+    plt.tight_layout()
     plt.show()
 
 
 if __name__ == '__main__':
     initialise_run()
     # display_annotation_high_contrast('data/vagus_dataset_2/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0100.bmp')
-    plot_loss_graph('model_losses/cv_aug_512.npy')
+    plot_model_losses_and_metrics('model_losses/{model_id}.pkl')
