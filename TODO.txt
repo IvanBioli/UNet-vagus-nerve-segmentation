@@ -12,3 +12,10 @@
 - https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html (IVAN) -- DONE
 - https://www.frontiersin.org/articles/10.3389/fnins.2021.685872/full
 - https://www.nature.com/articles/s41596-020-0377-6
+
+
+#######################################################################################
+- Comparison of images area threshold
+- Cross-loss visualizations for models 
+- Custom metrics: IOU, combined_dice_loss, etc.
+- Train adn visualize two-ways? (i.e. train with BCE_loss and visualize dice_loss and train with dice_loss and visualize BCE_loss)
