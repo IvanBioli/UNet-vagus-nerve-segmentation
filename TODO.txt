@@ -18,4 +18,6 @@
 - Comparison of images area threshold
 - Cross-loss visualizations for models 
 - Custom metrics: IOU, combined_dice_loss, etc.
+- Metrics to visualize: IoU, combined_dice_loss, DiceLoss, SparseCategoricalCrossEntropy
 - Train adn visualize two-ways? (i.e. train with BCE_loss and visualize dice_loss and train with dice_loss and visualize BCE_loss)
+- Distribution over training/validation set of the same metrics to visualize.

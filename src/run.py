@@ -9,19 +9,23 @@ from model import get_model
 from loss import sparse_cce_dice_combination_loss
 
 def train(model_id, train_img_target_pairs, val_img_target_pairs=None, cross_validation_folds=10):
-    losses = []
-    validation_losses = []
+    model_losses_and_metrics = []
 
     model = get_model(img_size, num_classes)
 
     # Configure the model for training.
     # We use the "sparse" version of categorical_crossentropy
     # because our target data is integers.
-    _optimizer = keras.optimizers.RMSprop()
-    #_optimizer = keras.optimizers.Adam()
-    #_loss = sparse_cce_dice_combination_loss
+    #_optimizer = keras.optimizers.RMSprop()
+    _optimizer = keras.optimizers.Adam()
+    # _loss = sparse_cce_dice_combination_loss
     _loss = keras.losses.SparseCategoricalCrossentropy()
-    model.compile(optimizer=_optimizer, loss=_loss)
+    model.compile(optimizer=_optimizer, loss=_loss,
+                  # metrics=[keras.metrics.SparseCategoricalCrossentropy()]
+                  metrics=[
+                      sparse_cce_dice_combination_loss,
+                      keras.metrics.SparseCategoricalCrossentropy()
+                  ])
 
     callbacks = [
         keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_best_only=True)
@@ -47,6 +51,8 @@ def train(model_id, train_img_target_pairs, val_img_target_pairs=None, cross_val
 
         # Fit to current train and validation split
         model_history = model.fit(train_data, epochs=epochs, validation_data=val_data, callbacks=callbacks)
+
+        print(model_history.history.keys())
 
         losses = model_history.history['loss']
         validation_losses = model_history.history['val_loss']
@@ -74,13 +80,14 @@ def train(model_id, train_img_target_pairs, val_img_target_pairs=None, cross_val
                 # Fit to current train and validation split
                 model_history = model.fit(train_data, epochs=1, validation_data=val_data, callbacks=callbacks)
 
-                losses.append(model_history.history['loss'])
-                validation_losses.append(model_history.history['val_loss'])
+                # losses.append(model_history.history['loss'])
+                # validation_losses.append(model_history.history['val_loss'])
 
     print('Finished training')
 
     losses_save_location = f'model_losses/{model_id}'
-    np.save(losses_save_location, np.array([losses, validation_losses]))
+
+    np.save(losses_save_location, np.array(list(model_history.history.values())))
 
     return model
 
@@ -119,7 +126,7 @@ if __name__ == '__main__':
     #m = train(model_id='Adam_SCC_512_default', train_img_target_pairs=input_target_path_pairs('data/training/520')) # With cross validation
     # Without cross validation
     m = train(
-        model_id='RMSProp_SCC_512_default',
+        model_id='test_custom_metric',
         train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/train'), 
         val_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/validation')
     )
