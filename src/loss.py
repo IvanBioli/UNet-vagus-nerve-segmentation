@@ -2,13 +2,13 @@ import keras.losses
 import tensorflow as tf
 
 
+def dice_loss(y_true, y_pred):
+    numerator = 2 * tf.reduce_sum(y_true * y_pred)
+    denominator = tf.reduce_sum(y_true + y_pred)
+    return 1 - numerator / denominator
+
+
 def sparse_cce_dice_combination_loss(y_true, y_pred):
-    def dice_loss(y_true, y_pred):
-        numerator = 2 * tf.reduce_sum(y_true * y_pred)
-        denominator = tf.reduce_sum(y_true + y_pred)
-
-        return 1 - numerator / denominator
-
     y_true = tf.cast(y_true, tf.float32)
     sparse_cce = keras.losses.SparseCategoricalCrossentropy()
     o = sparse_cce(y_true, y_pred) + dice_loss(y_true, y_pred)

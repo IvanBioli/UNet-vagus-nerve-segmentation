@@ -6,7 +6,7 @@ from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from eval import model_iou, one_prediction_iou
 from model import get_model
-from loss import sparse_cce_dice_combination_loss, SparseMeanIoU
+from loss import sparse_cce_dice_combination_loss, SparseMeanIoU, dice_loss
 import pickle
 
 
@@ -20,13 +20,14 @@ def train(model_id, train_img_target_pairs, val_img_target_pairs):
         loss=_loss,
         metrics=[
             SparseMeanIoU(num_classes=num_classes, name='spare_mean_iou'),
+            dice_loss,
             keras.metrics.SparseCategoricalAccuracy(),
             keras.metrics.SparseCategoricalCrossentropy()
         ]
     )
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_best_only=True)
+        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_freq=5)
     ]
 
     (img_paths, target_paths) = train_img_target_pairs

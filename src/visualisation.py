@@ -127,12 +127,12 @@ def plot_model_losses_and_metrics(loss_filepath):
 
     print('Number of datapoints: ', len(model_details['loss']))
 
-    fig, axs = plt.subplots(len(train_keys))
+    fig, axs = plt.subplots(len(train_keys), figsize=(8,15))
 
     for idx, (t_k, v_k) in enumerate(zip(train_keys, val_keys)):
         axs[idx].plot(model_details[t_k], label=t_k)
         axs[idx].plot(model_details[v_k], label=v_k)
-        axs[idx].legend()
+        axs[idx].legend(loc='upper right')
     plt.tight_layout()
     plt.show()
 
@@ -140,4 +140,4 @@ def plot_model_losses_and_metrics(loss_filepath):
 if __name__ == '__main__':
     initialise_run()
     # display_annotation_high_contrast('data/vagus_dataset_2/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0100.bmp')
-    plot_model_losses_and_metrics('model_losses/{model_id}.pkl')
+    plot_model_losses_and_metrics('model_losses/test_custom_metrics.pkl')
