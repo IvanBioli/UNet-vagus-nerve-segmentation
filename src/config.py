@@ -7,6 +7,7 @@ num_classes = 2
 num_classes = 2  # TODO change num classes to 2
 #val_samples = 10
 epochs = 100  # Can only be a multiple of 10 at the moment
+fine_tune_epochs=20
 
 debug = False
 debug_img_filepath = 'data/vagus_dataset_6/images/img_1.npy'
