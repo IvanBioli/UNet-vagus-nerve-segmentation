@@ -14,6 +14,7 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
 
     _optimizer = keras.optimizers.Adam()
     _loss = sparse_cce_dice_combination_loss
+    #_loss = keras.losses.SparseCategoricalCrossentropy()
     model.compile(
         optimizer=_optimizer,
         loss=_loss,
@@ -26,7 +27,7 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
     )
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_freq=5)
+        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_best_only=True)
     ]
 
     (img_paths, target_paths) = train_img_target_pairs
@@ -57,7 +58,7 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
 
 def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers, train_img_target_pairs, val_img_target_pairs):
 
-    trained_model = keras.models.load_model(trained_model_path)
+    trained_model = keras.models.load_model(trained_model_path, custom_objects={'sparse_cce_dice_combination_loss': sparse_cce_dice_combination_loss, 'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss})
 
     # check the number of fine-tuning blocks is less or equal to the number of blocks in the encoder 
     assert num_blocks_fine_tune <= len(encoder_layers)
@@ -71,8 +72,11 @@ def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers
     for layer in trained_model.layers[start_fine_tune_layer:]:
         layer.trainable = True
 
-    _optimizer = keras.optimizers.Adam(1e-5) # low learning rate
-    _loss = sparse_cce_dice_combination_loss
+    #_optimizer = keras.optimizers.Adam(1e-5) # low learning rate
+    #_loss = sparse_cce_dice_combination_loss
+    _optimizer = keras.optimizers.SGD(lr = 1e-2)
+    #_optimizer = keras.optimizers.Adam()
+    #_loss = keras.losses.SparseCategoricalCrossentropy()
     trained_model.compile(
         optimizer=_optimizer,
         loss=_loss,
@@ -85,7 +89,7 @@ def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers
     )
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_freq=5)
+        keras.callbacks.ModelCheckpoint(f'model_checkpoints/{model_id}.h5', save_best_only=True)
     ]
 
     (img_paths, target_paths) = train_img_target_pairs
@@ -136,11 +140,11 @@ def output_predictions(trained_model=None, trained_model_id=None):
 if __name__ == '__main__':
     initialise_run()
     model, decoder_layers, encoder_layers = get_model(img_size, num_classes)
-    print("Decoder Layers: " + decoder_layers)
-    print("Encoder Layers: " + encoder_layers)
-    cur_model_id = 'test_custom_metrics'
-    ft_model_id = 'Adam_SCC_512_fine_tune'
-    trained_model_path = 'model_checkpoints\Adam_SCC_512_default.h5'
+    print("Decoder Layers: " + ' '.join(str(e) for e in decoder_layers))
+    print("Encoder Layers: " + ' '.join(str(e) for e in encoder_layers))
+    cur_model_id = 'Adam_512_SCCE'
+    ft_model_id = 'Adam_512_SCCE_fine_tune'
+    trained_model_path = 'model_checkpoints\Adam_512_SCCE.h5'
     # m = train(
     #     model=model,
     #     model_id=cur_model_id,
@@ -150,7 +154,7 @@ if __name__ == '__main__':
     m = fine_tune(
         trained_model_path=trained_model_path, 
         model_id=ft_model_id, 
-        num_blocks_fine_tune=1, 
+        num_blocks_fine_tune=4, 
         encoder_layers=encoder_layers, 
         train_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/train'),
         val_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/validation')
