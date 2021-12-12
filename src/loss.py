@@ -11,20 +11,18 @@ def dice_loss(y_true, y_pred):
     return 1 - numerator / denominator
 
 
-def tversky_loss(y_true, y_pred, beta=0.5):
+def tversky_loss(y_true, y_pred):
+    beta = 0.1
     y_true = tf.cast(y_true, tf.float32)
-    y_pred = tf.math.sigmoid(y_pred)
     numerator = y_true * y_pred
     denominator = y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred)
-
     return 1 - tf.reduce_sum(numerator) / tf.reduce_sum(denominator)
 
 
-def nerve_segmentation_loss(y_true, y_pred, dice_multiplier=2, iou_multiplier=1):
+def nerve_segmentation_loss(y_true, y_pred, multiplier=2):
     y_true = tf.cast(y_true, tf.float32)
     sparse_cce = keras.losses.SparseCategoricalCrossentropy()
-    o = sparse_cce(y_true, y_pred) + dice_multiplier * dice_loss(y_true, y_pred)
-
+    o = sparse_cce(y_true, y_pred) + multiplier * tversky_loss(y_true, y_pred)
     return tf.reduce_mean(o)
 
 
