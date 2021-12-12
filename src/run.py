@@ -6,20 +6,20 @@ from data_loader import VagusDataLoader
 from data_utils import input_target_path_pairs
 from eval import model_iou, one_prediction_iou
 from model import get_model
-from loss import sparse_cce_dice_combination_loss, SparseMeanIoU, dice_loss
+from loss import nerve_segmentation_loss, SparseMeanIoU, dice_loss
 import pickle
 
 
 def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
 
     _optimizer = keras.optimizers.Adam()
-    _loss = sparse_cce_dice_combination_loss
+    _loss = nerve_segmentation_loss
     #_loss = keras.losses.SparseCategoricalCrossentropy()
     model.compile(
         optimizer=_optimizer,
         loss=_loss,
         metrics=[
-            SparseMeanIoU(num_classes=num_classes, name='spare_mean_iou'),
+            SparseMeanIoU(num_classes=num_classes, name='sparse_mean_iou'),
             dice_loss,
             keras.metrics.SparseCategoricalAccuracy(),
             keras.metrics.SparseCategoricalCrossentropy()
@@ -58,7 +58,7 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
 
 def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers, train_img_target_pairs, val_img_target_pairs):
 
-    trained_model = keras.models.load_model(trained_model_path, custom_objects={'sparse_cce_dice_combination_loss': sparse_cce_dice_combination_loss, 'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss})
+    trained_model = keras.models.load_model(trained_model_path, custom_objects={'sparse_cce_dice_combination_loss': nerve_segmentation_loss, 'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss})
 
     # check the number of fine-tuning blocks is less or equal to the number of blocks in the encoder 
     assert num_blocks_fine_tune <= len(encoder_layers)
@@ -73,8 +73,8 @@ def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers
         layer.trainable = True
 
     #_optimizer = keras.optimizers.Adam(1e-5) # low learning rate
-    #_loss = sparse_cce_dice_combination_loss
-    _optimizer = keras.optimizers.SGD(lr = 1e-2)
+    _loss = nerve_segmentation_loss
+    _optimizer = keras.optimizers.SGD(lr=1e-2)
     #_optimizer = keras.optimizers.Adam()
     #_loss = keras.losses.SparseCategoricalCrossentropy()
     trained_model.compile(
@@ -145,20 +145,20 @@ if __name__ == '__main__':
     cur_model_id = 'Adam_512_SCCE'
     ft_model_id = 'Adam_512_SCCE_fine_tune'
     trained_model_path = 'model_checkpoints\Adam_512_SCCE.h5'
-    # m = train(
-    #     model=model,
-    #     model_id=cur_model_id,
-    #     train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/train'),
-    #     val_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/validation')
-    # )
-    m = fine_tune(
-        trained_model_path=trained_model_path, 
-        model_id=ft_model_id, 
-        num_blocks_fine_tune=4, 
-        encoder_layers=encoder_layers, 
-        train_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/train'),
-        val_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/validation')
+    m = train(
+        model=model,
+        model_id=cur_model_id,
+        train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/train'),
+        val_img_target_pairs=input_target_path_pairs('data/vagus_dataset_10/validation')
     )
+    # m = fine_tune(
+    #     trained_model_path=trained_model_path,
+    #     model_id=ft_model_id,
+    #     num_blocks_fine_tune=4,
+    #     encoder_layers=encoder_layers,
+    #     train_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/train'),
+    #     val_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/validation')
+    # )
 
     # output_predictions(trained_model_id=cur_model_id)
     print('Done')
