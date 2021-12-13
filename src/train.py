@@ -4,19 +4,20 @@ from tensorflow import keras
 
 from src.config import num_classes, batch_size, img_size, epochs
 from src.data_loader import VagusDataLoader
-from src.loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss
+from src.loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss, tversky_loss
 
 
 def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
     _optimizer = keras.optimizers.Adam()
     _loss = nerve_segmentation_loss
-    # _loss = keras.losses.SparseCategoricalCrossentropy()
+
     model.compile(
         optimizer=_optimizer,
         loss=_loss,
         metrics=[
             SparseMeanIoU(num_classes=num_classes, name='sparse_mean_iou'),
             dice_loss,
+            tversky_loss,
             keras.metrics.SparseCategoricalAccuracy(),
             keras.metrics.SparseCategoricalCrossentropy()
         ]

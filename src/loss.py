@@ -1,8 +1,6 @@
 import keras.losses
 import tensorflow as tf
 
-from src.config import num_classes
-
 
 def dice_loss(y_true, y_pred):
     y_true = tf.cast(y_true, tf.float32)
