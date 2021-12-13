@@ -26,6 +26,8 @@ def delete_small_regions(input_mask, threshold = 40):
 def apply_watershed(mask, coeff_list=[0.35]):
     thresh = ((1 - mask) * 255).astype('uint8')
     img = cv2.merge((thresh,thresh,thresh))
+    plt.imshow(img, interpolation='none')
+    plt.show()
     
     # Morhphological operations to remove noise - morphological opening
     kernel = np.ones((3,3),np.uint8)
@@ -50,8 +52,13 @@ def apply_watershed(mask, coeff_list=[0.35]):
         markers[unknown==255] = 0
         # Using watershed to have the markers
         markers = cv2.watershed(img,markers)
-        # We draw a white border according to the markers
-        img[markers == -1] = [255,255,255]
+        # We draw a black border according to the markers
+        img[markers == -1] = [255, 0, 0]
+        plt.imshow(img, interpolation='none')
+        plt.show()
+        img[markers == -1] = [0, 0, 0]
+        plt.imshow(img, interpolation='none')
+        plt.show()
 
     (_, mask_wat) = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 127, 255, cv2.THRESH_BINARY)
     assert((np.unique(mask_wat) == [0, 255]).all())
@@ -59,12 +66,12 @@ def apply_watershed(mask, coeff_list=[0.35]):
     
     return mask_wat
 
-def predict_mask(trained_model, img, threshold = 15, coeff_list = [0.1, 0.35, 0.37, 0.4]):
+def predict_mask(trained_model, img, threshold = 15, coeff_list = [0]):
     prediction = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
     prediction = delete_small_regions(prediction, threshold)
-    prediction = apply_watershed(prediction, coeff_list)
+    #prediction = apply_watershed(prediction, coeff_list)
     # To delete artifacts of the watershed
-    prediction = delete_small_regions(prediction, threshold)
+    #prediction = delete_small_regions(prediction, threshold)
     prediction[prediction == 1.] = 1
     prediction[prediction == 0.] = 0
     return prediction

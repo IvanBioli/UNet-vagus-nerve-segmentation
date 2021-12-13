@@ -22,7 +22,7 @@ steps_per_epoch = train_sample_size / batch_size
 validation_steps = val_sample_size / batch_size
 
 model_path = 'model_checkpoints/Adam_SCC_512_default.h5'
-minimum_fascicle_area = 101
+minimum_fascicle_area = 150
 watershed_coeff = [0.35]
 
 
