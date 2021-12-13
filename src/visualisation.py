@@ -2,14 +2,15 @@ import pickle
 
 import cv2
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 from PIL import ImageOps, Image
 from skimage import color
 from tensorflow import keras
 
 
-# from src.config import initialise_run
-# from src.post_processing import identify_fasicle_regions
+#from src.config import initialise_run
+#from src.post_processing import identify_fasicle_regions
 from config import initialise_run
 from post_processing import identify_fasicle_regions
 
@@ -117,22 +118,42 @@ def show_result_test(image_resized, mask_resized):
     plt.pause(1)
 
 
+    
 def plot_model_losses_and_metrics(loss_filepath):
-
     with open(loss_filepath, 'rb') as loss_file:
         model_details = pickle.load(loss_file)
-
-    train_keys = sorted([x for x in model_details.keys() if not x.startswith('val')])
-    val_keys = sorted([x for x in model_details.keys() if x.startswith('val')])
-
-    print('Number of datapoints: ', len(model_details['loss']))
-
-    fig, axs = plt.subplots(len(train_keys), figsize=(8,15))
-
-    for idx, (t_k, v_k) in enumerate(zip(train_keys, val_keys)):
-        axs[idx].plot(model_details[t_k], label=t_k)
-        axs[idx].plot(model_details[v_k], label=v_k)
-        axs[idx].legend(loc='upper right')
+    print(model_details.keys())
+    fig, axs = plt.subplots(4, figsize=(5,10))
+    best = np.argmin(model_details['val_loss'])
+    print('\nBest at epoch: ', best)
+    # SparseCategoricalCrossentropy
+    axs[0].plot(model_details['sparse_categorical_crossentropy'], label = 'Training set')
+    axs[0].plot(model_details['val_sparse_categorical_crossentropy'], label = 'Test set')
+    axs[0].set(xlabel="Epochs", ylabel="CCE")
+    axs[0].set_ylim(bottom = 0)
+    axs[0].legend()
+    print('\nCCE:\ntraining = ', model_details['sparse_categorical_crossentropy'][best], '\ntest = ', model_details['val_sparse_categorical_crossentropy'][best])
+    # IoU
+    axs[1].plot(model_details['spare_mean_iou'], label = 'Training set')
+    axs[1].plot(model_details['val_spare_mean_iou'], label = 'Test set')
+    axs[1].set(xlabel="Epochs", ylabel="IoU")
+    axs[1].set_ylim([0,1])
+    axs[1].legend()
+    print('\nIoU:\ntraining = ', model_details['spare_mean_iou'][best], '\ntest = ', model_details['val_spare_mean_iou'][best])
+    # SparseCategoricalAccuracy
+    axs[2].plot(model_details['sparse_categorical_accuracy'], label = 'Training set')
+    axs[2].plot(model_details['val_sparse_categorical_accuracy'], label = 'Test set')
+    axs[2].set(xlabel="Epochs", ylabel="Categorical  Accuracy")
+    axs[2].set_ylim(top = 1)
+    axs[2].legend()
+    print('\nCategorical Accuracy:\ntraining = ', model_details['sparse_categorical_accuracy'][best], '\ntest = ', model_details['val_sparse_categorical_accuracy'][best])
+    # DiceLoss
+    axs[3].plot(model_details['dice_loss'], label = 'Training set')
+    axs[3].plot(model_details['val_dice_loss'], label = 'Test set')
+    axs[3].set(xlabel="Epochs", ylabel="Dice Loss")
+    axs[3].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+    axs[3].legend()
+    print('\nDice Loss:\ntraining = ', model_details['dice_loss'][best], '\ntest = ', model_details['val_dice_loss'][best])
     plt.tight_layout()
     plt.show()
 
@@ -140,4 +161,4 @@ def plot_model_losses_and_metrics(loss_filepath):
 if __name__ == '__main__':
     initialise_run()
     # display_annotation_high_contrast('data/vagus_dataset_2/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0100.bmp')
-    plot_model_losses_and_metrics('model_losses/test_custom_metrics.pkl')
+    plot_model_losses_and_metrics('model_losses/Adam_512_dice_loss.pkl')
