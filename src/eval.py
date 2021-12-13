@@ -36,8 +36,8 @@ def apply_watershed(mask, coeff_list=[0.35]):
     # intensities of the points inside the foreground regions are changed to 
     # distance their respective distances from the closest 0 value (boundary).
     dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
-    
-    for i, coeff in enumerate(coeff_list):
+
+    for coeff in coeff_list:
         ret, sure_fg = cv2.threshold(dist_transform, coeff*dist_transform.max(),255,0)
         # Finding unknown region, the one that is not sure background and not sure foregound
         sure_fg = np.uint8(sure_fg)
@@ -50,10 +50,10 @@ def apply_watershed(mask, coeff_list=[0.35]):
         markers[unknown==255] = 0
         # Using watershed to have the markers
         markers = cv2.watershed(img,markers)
-        # We draw a black border according to the markers
-        img[markers == -1] = [0,0,0]
+        # We draw a white border according to the markers
+        img[markers == -1] = [255,255,255]
 
-    (_, mask_wat) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+    (_, mask_wat) = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 127, 255, cv2.THRESH_BINARY)
     assert((np.unique(mask_wat) == [0, 255]).all())
     mask_wat = 1 - mask_wat / 255 
     

@@ -8,11 +8,8 @@ from tensorflow import keras
 from loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss, sparse_cce_dice_combination_loss, tversky_loss
 from eval import predict_mask
 
-from config import initialise_run
-from post_processing import identify_fasicle_regions
+from config import initialise_run, minimum_fascicle_area, watershed_coeff
 custom = {'sparse_cce_dice_combination_loss': sparse_cce_dice_combination_loss, 'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
-
-from statistics import mean
 
 
 def get_samples(data_folder, test=False, num_samples=1, shuffle=True):
@@ -91,7 +88,7 @@ def show_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
 
         regions_pred, regions_mask = calculate_regions(pred, mask)
         
-        pred_post = predict_mask(trained_model, img, threshold=101, coeff_list=[0.4])
+        pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
         regions_post, _ = calculate_regions(pred_post)
             
         if not test:
