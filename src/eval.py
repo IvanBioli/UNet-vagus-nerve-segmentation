@@ -4,10 +4,10 @@ from skimage.measure import label, regionprops
 import cv2
 import matplotlib.pyplot as plt
 
-from src.config import num_classes, batch_size
-from src.visualisation import show_overlay_result, show_result_test
-#from config import num_classes, batch_size
-#from visualisation import show_overlay_result, show_result_test
+# from src.config import num_classes, batch_size
+# from src.visualisation import show_overlay_result, show_result_test
+from config import num_classes, batch_size
+from visualisation import show_overlay_result, show_result_test
 
 
 def get_model_prediction(trained_model, input_image):

@@ -23,6 +23,11 @@ def nerve_segmentation_loss(y_true, y_pred, multiplier=2):
     o = sparse_cce(y_true, y_pred) + multiplier * tversky_loss(y_true, y_pred)
     return tf.reduce_mean(o)
 
+def sparse_cce_dice_combination_loss(y_true, y_pred, multiplier=2):
+    y_true = tf.cast(y_true, tf.float32)
+    sparse_cce = keras.losses.SparseCategoricalCrossentropy()
+    o = sparse_cce(y_true, y_pred) + multiplier * tversky_loss(y_true, y_pred)
+    return tf.reduce_mean(o)
 
 class SparseMeanIoU(tf.keras.metrics.MeanIoU):
 

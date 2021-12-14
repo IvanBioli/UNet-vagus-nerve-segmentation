@@ -51,7 +51,7 @@ def compute_bins(n, pred, mask=None):
     return bins
 
 def show_fascicles_distribution(paths, test=False, trained_model_checkpoint=None, save=False, show=True):
-
+    
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects = custom)
 
@@ -173,11 +173,11 @@ if __name__ == '__main__':
     initialise_run()
     model_save_file = os.path.join(os.getcwd(), 'model_checkpoints/Adam_SCC_512_default.h5')
     # Loading data from train folder
-    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_10/train')
+    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/train')
     sample_train = get_samples(train_folder, num_samples=-1)
     # Loading data from unlabelled folder
-    unlabelled_folder = os.path.join(os.getcwd(), 'data/520/unlabelled')
-    sample_unlabelled = get_samples(unlabelled_folder, test=True, num_samples=-1)
+    # unlabelled_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/unlabelled')
+    # sample_unlabelled = get_samples(unlabelled_folder, test=True, num_samples=-1)
     # Showing fascicles distribution
     show_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True)
-    show_fascicles_distribution(sample_unlabelled, trained_model_checkpoint=model_save_file, save=True)
+    # show_fascicles_distribution(sample_unlabelled, trained_model_checkpoint=model_save_file, save=True)

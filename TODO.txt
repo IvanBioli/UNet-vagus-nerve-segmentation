@@ -21,3 +21,19 @@
 - Metrics to visualize: IoU, combined_dice_loss, DiceLoss, SparseCategoricalCrossEntropy
 - Train adn visualize two-ways? (i.e. train with BCE_loss and visualize dice_loss and train with dice_loss and visualize BCE_loss)
 - Distribution over training/validation set of the same metrics to visualize.
+
+
+#######################################################################################
+Metrics: SPCC - dice loss - IoU - categorical accuracy - tversky loss - sparce mean IoU.
+########
+- Visulaization tasks:
+    + Original image: 2->4 augmented images
+    + Remove post-processing distribution histograms
+    + Image - Mask - Prediction - Overlay on mask - Numbers (Metrics)
+- Draw image of U0net X-Ception model architecture
+- Remove save_best
+- Find the optimized epochs, with visualization (e.g. save the model every 10 epochs and then compared the performace - unlabelled & validation)
+- Check the formula of all loss functions, re-implement them, and retrain with optimized epochs
+- Cross visualize (Metrics)
+- Mention RMSProps vs Adam
+- requirements.txt
