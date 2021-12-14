@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 from tensorflow import keras
-from loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss, sparse_cce_dice_combination_loss, tversky_loss
+from loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss, tversky_loss
 from eval import predict_mask
 from stats import get_samples
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
-custom = {'sparse_cce_dice_combination_loss': sparse_cce_dice_combination_loss, 'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
+custom = {'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
 def show_masks_vs_prediction(img_path_list, mask_path_list, trained_model_checkpoint=None, save=False, show=True):
     if trained_model_checkpoint is not None:
@@ -96,13 +96,17 @@ def plot_model_losses_and_metrics(loss_filepath):
 if __name__ == '__main__':
     initialise_run()
     img_path = [
-        'data/vagus_dataset_10/validation/images/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
-        'data/vagus_dataset_10/validation/images/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
-        'data/vagus_dataset_10/validation/images/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy']
+        'data/vagus_dataset_11/validation/images/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
+        # 'data/vagus_dataset_11/validation/images/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
+        # 'data/vagus_dataset_11/validation/images/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
+        'data/transfer_learning_dataset/train/images/P10sx1 +500 vet15 4x.npy',
+    ]
     mask_path = [
-        'data/vagus_dataset_10/validation/annotations/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
-        'data/vagus_dataset_10/validation/annotations/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
-        'data/vagus_dataset_10/validation/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy']
+        'data/vagus_dataset_11/validation/annotations/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
+        # 'data/vagus_dataset_11/validation/annotations/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
+        # 'data/vagus_dataset_11/validation/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
+        'data/transfer_learning_dataset/train/annotations/P10sx1 +500 vet15 4x.npy',
+    ]
     model_save_file = os.path.join(os.getcwd(), model_path)
     show_masks_vs_prediction(img_path, mask_path, trained_model_checkpoint=model_save_file, save=False, show=True)
     #plot_model_losses_and_metrics('model_losses/Adam_512_SCCE_fine_tune.pkl')

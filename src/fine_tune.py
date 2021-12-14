@@ -9,7 +9,12 @@ from src.loss import nerve_segmentation_loss, SparseMeanIoU, dice_loss, tversky_
 
 def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers, train_img_target_pairs, val_img_target_pairs):
 
-    trained_model = keras.models.load_model(trained_model_path, custom_objects={'sparse_cce_dice_combination_loss': nerve_segmentation_loss, 'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss})
+    trained_model = keras.models.load_model(trained_model_path, custom_objects={
+        'nerve_segmentation_loss': nerve_segmentation_loss,
+        'SparseMeanIoU': SparseMeanIoU,
+        'dice_loss': dice_loss,
+        'tversky_loss': tversky_loss
+    })
 
     # check the number of fine-tuning blocks is less or equal to the number of blocks in the encoder
     assert num_blocks_fine_tune <= len(encoder_layers)
