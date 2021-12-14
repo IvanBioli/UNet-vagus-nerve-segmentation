@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 from tensorflow import keras
-from loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss, tversky_loss
+from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score
 from eval import predict_mask
 from stats import get_samples
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
-custom = {'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
+custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
 def show_masks_vs_prediction(img_path_list, mask_path_list, trained_model_checkpoint=None, save=False, show=True):
     if trained_model_checkpoint is not None:
@@ -26,7 +26,10 @@ def show_masks_vs_prediction(img_path_list, mask_path_list, trained_model_checkp
     for k, img_path in enumerate(img_path_list):
         img = np.load(img_path)
         mask = np.load(mask_path_list[k])
+        # pred = trained_model.predict(np.expand_dims(img, axis=0))
         pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+        # pred = pred * 255
+        # print('IOU SCORE: ', iou_score(mask, pred))
 
         if save:
             fname = img_path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
@@ -97,14 +100,14 @@ if __name__ == '__main__':
     initialise_run()
     img_path = [
         'data/vagus_dataset_11/validation/images/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
-        # 'data/vagus_dataset_11/validation/images/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
-        # 'data/vagus_dataset_11/validation/images/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
+        'data/vagus_dataset_11/validation/images/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
+        'data/vagus_dataset_11/validation/images/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
         'data/transfer_learning_dataset/train/images/P10sx1 +500 vet15 4x.npy',
     ]
     mask_path = [
         'data/vagus_dataset_11/validation/annotations/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
-        # 'data/vagus_dataset_11/validation/annotations/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
-        # 'data/vagus_dataset_11/validation/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
+        'data/vagus_dataset_11/validation/annotations/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
+        'data/vagus_dataset_11/validation/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
         'data/transfer_learning_dataset/train/annotations/P10sx1 +500 vet15 4x.npy',
     ]
     model_save_file = os.path.join(os.getcwd(), model_path)

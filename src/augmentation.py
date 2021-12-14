@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
-import numpy
 import numpy as np
 from keras_preprocessing.image import apply_affine_transform, random_channel_shift, random_brightness
 
-from config import img_size, initialise_run, debug_img_filepath
+from config import img_size, initialise_run
 
 
-def get_random_affine_transformation():
+def get_random_affine_transformation(white_background=True):
+    """
+        param: white_background - Flag to set background of data augmentation to white or use an average of an image
+    """
     def sample_rand_float(multiplier=0.2):
         return (np.random.rand() - 0.5) * multiplier * 2
 
@@ -22,25 +24,25 @@ def get_random_affine_transformation():
         tx=int(sample_rand_float() * img_size[1]),
         ty=int(sample_rand_float() * img_size[1]),
         shear=np.random.randint(0, 30),
-        zx=np.random.uniform(0.7, 1),
-        zy=np.random.uniform(0.7, 1),
+        zx=np.random.uniform(0.9, 1.1),
+        zy=np.random.uniform(0.9, 1.1),
     )
 
     def transformation(img, is_annotation=False, do_colour_transform=True):
-        cur_cval = 0 if is_annotation else numpy.average(img)
+        """
+
+            param: do_colour_transform - Flag to apply colour and brightness transformations
+        """
+        if is_annotation:
+            cur_cval = 0
+        else:
+            if white_background:
+                cur_cval = 1
+            else:
+                cur_cval = np.average(img)
         img = apply_affine_transform(img, fill_mode='constant', cval=cur_cval, **affine_transform_args)
         if do_colour_transform:
             img = apply_colour_transform(img, is_annotation=is_annotation)
         return img
 
     return transformation
-
-
-if __name__ == '__main__':
-    initialise_run()
-    test_img = np.load(debug_img_filepath)
-    img_aug = random_channel_shift(test_img, 0.5)
-    plt.imshow(test_img)
-    plt.show()
-    plt.imshow(img_aug)
-    plt.show()

@@ -38,7 +38,7 @@ class VagusDataLoader(keras.utils.Sequence):
             annotation = np.load(target_path)
             annotation = np.expand_dims(annotation, axis=2)
             current_transform = get_random_affine_transformation()
-            augmented_img = current_transform(img)
+            augmented_img = current_transform(img, do_colour_transform=False)
             augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=False)
             augmented_annotation = cv2.threshold(augmented_annotation, 0.5, 1, cv2.THRESH_BINARY)[1]
             augmented_annotation = np.expand_dims(augmented_annotation, axis=2)
@@ -46,7 +46,7 @@ class VagusDataLoader(keras.utils.Sequence):
             y[j] = augmented_annotation
 
         # Useful debug code
-        if i == 0 and debug:
+        if debug:
             print(f'Data loader first x, y pair - x shape: {x.shape}, x min max: {np.min(x)}, {np.max(x)}, y shape: {y.shape}, y values: {np.unique(y, return_counts=True)}')
             print('x')
             plt.imshow(x[0, :, :, :])

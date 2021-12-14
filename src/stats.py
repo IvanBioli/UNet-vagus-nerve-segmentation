@@ -5,11 +5,11 @@ import numpy as np
 import random
 from skimage.measure import regionprops, label
 from tensorflow import keras
-from loss import SparseMeanIoU, dice_loss, nerve_segmentation_loss, tversky_loss
+from loss import dice_loss, nerve_segmentation_loss, tversky_loss
 from eval import predict_mask
 
 from config import initialise_run, minimum_fascicle_area, watershed_coeff
-custom = {'SparseMeanIoU': SparseMeanIoU, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
+custom = {'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
 
 def get_samples(data_folder, test=False, num_samples=1, shuffle=True):

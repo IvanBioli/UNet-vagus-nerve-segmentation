@@ -6,10 +6,9 @@ num_classes = 2
 epochs = 80
 fine_tune_epochs = 40
 
-debug = True
-debug_img_filepath = 'data/vagus_dataset_6/images/img_1.npy'
+debug = False
 
-cur_model_id = 'Adam_512_SCCE_transfer'
+cur_model_id = 'Adam_512_iou_test'
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'
 minimum_fascicle_area = 150
