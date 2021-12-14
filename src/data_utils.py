@@ -4,11 +4,12 @@ import numpy as np
 
 
 def is_annotation(annotation):
+    """ Returns true if the image provided is an annotation in the correct format. """
     return (np.unique(annotation) == np.array([0, 1])).all() and annotation.dtype == np.dtype('uint8')
 
 
 def input_target_path_pairs(directory, print_examples=48):
-    """ Create image target pairs """
+    """ Create image target pairs to feed into data loaders. """
     input_dir = os.path.join(os.getcwd(), directory, 'images')
     target_dir = os.path.join(os.getcwd(), directory, 'annotations')
 

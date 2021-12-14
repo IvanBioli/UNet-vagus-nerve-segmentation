@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy
 import numpy as np
 from keras_preprocessing.image import apply_affine_transform, random_channel_shift, random_brightness
 
@@ -25,9 +26,11 @@ def get_random_affine_transformation():
         zy=np.random.uniform(0.7, 1),
     )
 
-    def transformation(img, is_annotation=False):
-        img = apply_affine_transform(img, fill_mode='constant', cval=1, **affine_transform_args)
-        img = apply_colour_transform(img, is_annotation=is_annotation)
+    def transformation(img, is_annotation=False, do_colour_transform=True):
+        cur_cval = 0 if is_annotation else numpy.average(img)
+        img = apply_affine_transform(img, fill_mode='constant', cval=cur_cval, **affine_transform_args)
+        if do_colour_transform:
+            img = apply_colour_transform(img, is_annotation=is_annotation)
         return img
 
     return transformation

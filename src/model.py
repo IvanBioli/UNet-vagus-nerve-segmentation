@@ -1,8 +1,14 @@
+"""
+U-Net model modified from https://arxiv.org/pdf/1505.04597.pdf
+Implementation: https://colab.research.google.com/github/keras-team/keras-io/blob/master/examples/vision/ipynb/oxford_pets_image_segmentation.ipynb
+"""
+
 from tensorflow.keras import layers
 from tensorflow import keras
 
-# from src.config import batch_size
 from config import batch_size
+
+
 
 
 def get_model(img_size, num_classes):

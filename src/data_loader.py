@@ -14,7 +14,7 @@ from data_utils import is_annotation
 
 
 class VagusDataLoader(keras.utils.Sequence):
-    """Helper to iterate over the data (as Numpy arrays)."""
+    """ Class to iterate over the data (as Numpy arrays). Image augmentation is performed here."""
 
     def __init__(self, batch_size, img_size, input_img_paths, target_img_paths):
         self.batch_size = batch_size
@@ -39,7 +39,7 @@ class VagusDataLoader(keras.utils.Sequence):
             annotation = np.expand_dims(annotation, axis=2)
             current_transform = get_random_affine_transformation()
             augmented_img = current_transform(img)
-            augmented_annotation = current_transform(annotation, is_annotation=True)
+            augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=False)
             augmented_annotation = cv2.threshold(augmented_annotation, 0.5, 1, cv2.THRESH_BINARY)[1]
             augmented_annotation = np.expand_dims(augmented_annotation, axis=2)
             x[j] = augmented_img
