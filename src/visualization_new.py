@@ -6,43 +6,111 @@ import matplotlib.ticker as ticker
 import numpy as np
 from tensorflow import keras
 from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score
-from eval import predict_mask
-from stats import get_samples
+from eval import apply_watershed, predict_mask
+from stats import get_samples, calculate_regions, compute_bins
+from augmentation import get_random_affine_transformation
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
 custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
-def show_masks_vs_prediction(img_path_list, mask_path_list, trained_model_checkpoint=None, save=False, show=True):
-    if trained_model_checkpoint is not None:
-        trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
+def plot_augmented_images(img_path, num_aug=6, num_aug_wcolor=2, save=False, show=True):
 
-    fig, axs = plt.subplots(len(img_path_list), 4, figsize=(12, 9))
+    img = np.load(img_path)
 
     if save:
-        output_folder = os.path.join(os.getcwd(), 'results/visualisations/prediction')
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/augmentations')
         os.makedirs(output_folder, exist_ok=True)
         out_fname = output_folder
 
-    for k, img_path in enumerate(img_path_list):
-        img = np.load(img_path)
-        mask = np.load(mask_path_list[k])
-        # pred = trained_model.predict(np.expand_dims(img, axis=0))
-        pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
-        # pred = pred * 255
-        # print('IOU SCORE: ', iou_score(mask, pred))
+    augmented_imgs = []
+    augmented_imgs_wcolor = []
 
-        if save:
-            fname = img_path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
-            out_fname = os.path.join(out_fname, fname)
+    for _ in range(num_aug):
+        transform = get_random_affine_transformation()
+        augmented_imgs.append(transform(img, do_colour_transform=False))
+    
+    for _ in range(num_aug_wcolor):
+        transform = get_random_affine_transformation()
+        augmented_imgs_wcolor.append(transform(img))
+
+    # augmented_imgs = np.array(augmented_imgs)
+    # augmented_imgs_wcolor = np.array(augmented_imgs_wcolor)
+
+    augmented_imgs= np.reshape(augmented_imgs, (2, num_aug // 2, 512, 512, 3))
+    augmented_imgs_wcolor = np.reshape(augmented_imgs_wcolor, (2, num_aug_wcolor // 2, 512, 512, 3))
+    
+    num_col = (num_aug + num_aug_wcolor) // 2 + 2
+    fig, axs = plt.subplots(2, num_col, figsize=(num_col * 3, 6))
+
+    gs = axs[0][0].get_gridspec()
+
+    for row in range(2): 
+        for ax in axs[row][0:2]:
+            ax.remove()
+    
+    original_ax = fig.add_subplot(gs[0:2, 0:2])
+    original_ax.imshow(img)
+
+    for x in range(2):
+        for y in range(2, num_aug // 2 + 2):
+            axs[x][y].imshow(augmented_imgs[x][y - 2])
+            axs[x][y].axis('off')
+
+        for y_wcolor in range(-num_aug_wcolor // 2, 0):
+            axs[x][y_wcolor].imshow(augmented_imgs_wcolor[x][y_wcolor + num_aug_wcolor // 2])
+            axs[x][y_wcolor].axis('off')
+
+    plt.axis('off')
+
+    if save:
+        plt.savefig(out_fname + '/augmentations_visualization.jpg')
+    if show:
+        plt.show()
+        
+
+def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=False, save=False, show=True):
+    if trained_model_checkpoint is not None:
+        trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
+
+    if wstats:
+        num_subplt = 5
+        sub_folder = 'wstats'
+    else:
+        num_subplt = 4
+        sub_folder = 'default'
+
+    fig, axs = plt.subplots(len(path_list), num_subplt, figsize=(num_subplt * 3, len(path_list) * 3))
+
+    if save:
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/', sub_folder)
+        os.makedirs(output_folder, exist_ok=True)
+        out_fname = output_folder
+
+    for k, path in enumerate(path_list):
+        img = np.load(path[0])
+        mask = np.load(path[1])
+
+        pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+
+        # if save:
+        #     fname = img_path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
+        #     out_fname = os.path.join(out_fname, fname)
 
         axs[k, 0].imshow(img)
         axs[k, 1].imshow(mask, cmap='gray', interpolation='none')
-        axs[k, 2].imshow(pred, cmap='gray', interpolation='none')
-        axs[k, 2].imshow(pred, cmap='gray', interpolation='none')
+        axs[k, 2].imshow(1 - pred, cmap='gray', interpolation='none')
 
         axs[k, 3].imshow(mask, cmap='gray', interpolation='none')
         axs[k, 3].imshow(1 - pred, cmap='viridis', alpha=0.5, interpolation='none')
-        for i in range(4):
+        
+        if wstats:
+            axs[k, 4].text(0.5, 0.5, 
+                'IoU Score: ' + str(iou_score(mask, 1 - pred, logits=False).numpy()) + '\n' +
+                'Dice Loss: ' + str(dice_loss(mask, 1 - pred, logits=False).numpy()) + '\n' +
+                'Tversky Loss: ' + str(tversky_loss(mask, 1 - pred, logits=False).numpy()) + '\n', 
+                horizontalalignment='center', verticalalignment='center', transform=axs[k, 4].transAxes)
+
+        for i in range(num_subplt):
             axs[k, i].xaxis.set_major_locator(ticker.NullLocator())
             axs[k, i].yaxis.set_major_locator(ticker.NullLocator())
 
@@ -52,10 +120,149 @@ def show_masks_vs_prediction(img_path_list, mask_path_list, trained_model_checkp
     axs[0, 3].set_title('Prediction overlayed\n on ground truth')
 
     if save:
-        plt.savefig(out_fname + '_predicted.jpg')
+        plt.savefig(out_fname + '/sample_predictions_' + sub_folder + '.jpg')
     if show:
         plt.show()
 
+def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None, save=False, show=True):
+    
+    if trained_model_checkpoint is not None:
+        trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects = custom)
+
+    if save:
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/distributions')
+        os.makedirs(output_folder, exist_ok=True)
+        if test:
+            fname = 'distribution_unlabelled_test_set'
+        else:
+            fname = 'distribution_training_set'
+        out_fname = os.path.join(output_folder, fname)
+
+    if not test:
+        areas_mask = []
+        num_fascicles_mask = []
+        eccentricity_mask = []
+    areas_pred = []
+    num_fascicles_pred = []
+    eccentricity_pred = []
+    areas_post = []
+    num_fascicles_post = []
+    eccentricity_post = []
+
+    for p in paths:
+        if not test:
+            img_path, mask_path = p
+            mask = np.load(mask_path)
+        else:
+            img_path = p
+            mask = None
+
+        img = np.load(img_path)
+        pred = predict_mask(trained_model, img, 0, [0])
+
+        regions_pred, regions_mask = calculate_regions(pred, mask)
+        
+        pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+        regions_post, _ = calculate_regions(pred_post)
+            
+        if not test:
+            areas_mask = areas_mask + [m.area for m in regions_mask]
+            eccentricity_mask = eccentricity_mask + [m.eccentricity for m in regions_mask]
+            num_fascicles_mask.append(len(regions_mask))
+        areas_pred = areas_pred + [p.area for p in regions_pred]
+        eccentricity_pred = eccentricity_pred + [p.eccentricity for p in regions_pred]
+        num_fascicles_pred.append(len(regions_pred))
+
+        areas_post = areas_post + [p.area for p in regions_post]
+        eccentricity_post = eccentricity_post + [p.eccentricity for p in regions_post]
+        num_fascicles_post.append(len(regions_post))
+
+    fig, axs = plt.subplots(1, 3, figsize=(20, 12))
+
+    nbins_area = 50
+    nbins_fascicles = 10
+    nbins_eccentricity = 50
+    if not test:
+        # Computing the bins for the areas' histogram and plotting the histogram
+        bins_areas = compute_bins(nbins_area, areas_pred, areas_mask)
+        axs[0].hist(areas_mask, bins=bins_areas, alpha=0.5, label='Ground truth')
+        # Computing the bins for the fascicles' histogram and plotting the histogram
+        bins_fascicles = compute_bins(nbins_fascicles, num_fascicles_pred, num_fascicles_mask)
+        axs[1].hist(num_fascicles_mask, bins=bins_fascicles, alpha=0.5, label='Ground truth')
+        bins_eccentricity = compute_bins(nbins_eccentricity, eccentricity_pred, eccentricity_mask)
+        axs[2].hist(eccentricity_mask, bins=bins_eccentricity, alpha=0.5, label='Ground truth')
+    else:
+        bins_areas = compute_bins(nbins_area, areas_pred)
+        bins_fascicles = compute_bins(nbins_fascicles, num_fascicles_pred)
+        bins_eccentricity = compute_bins(nbins_eccentricity, eccentricity_pred)
+
+    # Histogram of Fascicles Areas for the predictions
+    axs[0].hist(areas_pred, bins=bins_areas, alpha=0.5, label='Prediction')
+    axs[0].set_xlabel('Areas (pixels)')
+    axs[0].set_ylabel('Occurrencies')
+    axs[0].legend(loc='upper right')
+    axs[0].set_title('Histogram of Fascicles Areas\n0.01-quantile: {}\n0.99-quantile: {}'.
+                        format(np.quantile(areas_mask, 0.01), np.round(np.quantile(areas_mask, 0.99), 4)))
+
+    # Histogram of Number of fascicles Areas for the predictions
+    axs[1].hist(num_fascicles_pred, bins=bins_fascicles, alpha=0.5, label='Prediction')
+    axs[1].set_xlabel('Number of Fascicles')
+    axs[1].set_ylabel('Occurrencies')
+    axs[1].legend(loc='upper right')
+    axs[1].set_title('Histogram of Number of Fascicles')
+
+    # Histogram of the Eccentricity
+    axs[2].hist(eccentricity_pred, bins=bins_eccentricity, alpha=0.5, label='Prediction')
+    axs[2].set_xlabel('Eccentricity')
+    axs[2].set_ylabel('Occurrencies')
+    axs[2].legend(loc='upper right')
+    axs[2].set_title('Histogram of Eccentricity\n0.01-quantile: {}\n0.99-quantile: {}'.
+                        format(np.round(np.quantile(eccentricity_mask, 0.01), 4), np.round(np.quantile(eccentricity_mask, 0.99), 4)))
+
+    # Print the quantiles of the areas and the eccentricity for the masks:
+    if not test:
+        print('0.01-quantile of the masks'' area:', np.quantile(areas_mask, 0.01))
+        print('0.99-quantile of the masks'' area:', np.quantile(areas_mask, 0.99))
+        print('0.01-quantile of the masks'' eccentricity:', np.quantile(eccentricity_mask, 0.01))
+        print('0.99-quantile of the masks'' eccentricity:', np.quantile(eccentricity_mask, 0.99))
+
+    # If postprocessing is involved
+    if save:
+        plt.savefig(out_fname + '.jpg')
+    if show:
+        plt.show()
+
+def plot_watershed(img_path, trained_model_checkpoint=None, save=False, show=True): 
+    
+    if trained_model_checkpoint is not None:
+        trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
+
+    if save:
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/watershed')
+        os.makedirs(output_folder, exist_ok=True)
+        fname = img_path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
+        out_fname = os.path.join(output_folder, fname)
+
+    img = np.load(img_path)
+    pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+
+    pred_wts = apply_watershed(pred)
+
+    fig, axs = plt.subplots(1, 3, figsize=(20, 12))
+
+    axs[0].imshow(img)
+    axs[0].set_title('Original Image')
+
+    axs[1].imshow(pred)
+    axs[1].set_title('Prediction')
+
+    axs[2].imshow(pred_wts)
+    axs[2].set_title('Prediction with watershed')
+
+    if save:
+        plt.savefig(out_fname + '___predictions_with_water_shed.jpg')
+    if show:
+        plt.show()
 
 # To plot the model losses and metrics
 def plot_model_losses_and_metrics(loss_filepath):
@@ -98,18 +305,27 @@ def plot_model_losses_and_metrics(loss_filepath):
 
 if __name__ == '__main__':
     initialise_run()
-    img_path = [
-        'data/vagus_dataset_11/validation/images/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
-        'data/vagus_dataset_11/validation/images/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
-        'data/vagus_dataset_11/validation/images/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
-        'data/transfer_learning_dataset/train/images/P10sx1 +500 vet15 4x.npy',
-    ]
-    mask_path = [
-        'data/vagus_dataset_11/validation/annotations/vago DX  - 27.06.18 - HH - vetrino 1 - pezzo 3 - campione 0010.npy',
-        'data/vagus_dataset_11/validation/annotations/vago SX - 27.06.18 - pezzo 4 - fetta 0035.npy',
-        'data/vagus_dataset_11/validation/annotations/Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0165.npy',
-        'data/transfer_learning_dataset/train/annotations/P10sx1 +500 vet15 4x.npy',
-    ]
+    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/train')
+    validation_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/validation')
+    unlabelled_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/unlabelled')
+
     model_save_file = os.path.join(os.getcwd(), model_path)
-    show_masks_vs_prediction(img_path, mask_path, trained_model_checkpoint=model_save_file, save=False, show=True)
-    #plot_model_losses_and_metrics('model_losses/Adam_512_SCCE_fine_tune.pkl')
+
+    ##################### Show augmented images ##########################################
+    sample_img_path = get_samples(train_folder, test=True)
+    sample_img_path = sample_img_path[0]
+    plot_augmented_images(sample_img_path, num_aug=4, num_aug_wcolor=2, save=True, show=False)
+
+    ##################### Show mask vs prediction #######################################
+    path_list = get_samples(validation_folder, num_samples=3)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=False)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=False)
+
+    #################### Show distributions #############################################
+    sample_train = get_samples(train_folder, num_samples=-1)
+    plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=False)
+
+    ##################### Show watershed prediction #############################################
+    # unlabelled_sample = get_samples(unlabelled_folder, test=True, num_samples=5)
+    # for img_path in unlabelled_sample:
+    #     plot_watershed(img_path=img_path, trained_model_checkpoint=model_save_file, save=True, show=False)

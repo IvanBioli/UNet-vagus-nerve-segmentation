@@ -1,7 +1,25 @@
 import os
 
 import numpy as np
+import random
 
+def get_samples(data_folder, test=False, num_samples=1, shuffle=True):
+    img_folder = data_folder + '/images'
+    img_paths = [img_folder + '/' + img_file for img_file in os.listdir(img_folder)]
+    if not test:
+        mask_folder = data_folder + '/annotations'
+        mask_paths = [mask_folder + '/' + mask_file for mask_file in os.listdir(mask_folder)]
+
+        paths = list(zip(img_paths, mask_paths))
+    else:
+        paths = img_paths
+
+    if shuffle:
+        random.shuffle(paths)
+
+    if num_samples == -1:
+        num_samples = len(paths)
+    return paths[:num_samples]
 
 def is_annotation(annotation):
     """ Returns true if the image provided is an annotation in the correct format. """
