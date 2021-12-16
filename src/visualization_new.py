@@ -6,13 +6,13 @@ import matplotlib.ticker as ticker
 import numpy as np
 from tensorflow import keras
 import tensorflow_addons as tfa
-from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, focal_tversky_loss, focal_loss
+from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, focal_tversky_loss, focal_loss, custom_loss
 from eval import apply_watershed, predict_mask
 from stats import get_samples, calculate_regions, compute_bins
 from augmentation import get_random_affine_transformation
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
-custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss, 'focal_tversky_loss': focal_tversky_loss, 'SigmoidFocalCrossEntropy': tfa.losses.SigmoidFocalCrossEntropy(), 'focal_loss': focal_loss}
+custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss, 'focal_tversky_loss': focal_tversky_loss, 'SigmoidFocalCrossEntropy': tfa.losses.SigmoidFocalCrossEntropy(), 'focal_loss': focal_loss, 'custom_loss': custom_loss}
 
 def plot_augmented_images(img_path, num_aug=6, num_aug_wcolor=2, save=False, show=True):
 
@@ -348,9 +348,9 @@ if __name__ == '__main__':
     #plot_augmented_images(sample_img_path, num_aug=4, num_aug_wcolor=2, save=True, show=True)
 
     ##################### Show mask vs prediction #######################################
-    #path_list = get_samples(validation_folder, num_samples=3)
-    #plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
-    #plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+    path_list = get_samples(validation_folder, num_samples=3)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
     #################### Show distributions #############################################
     #sample_train = get_samples(train_folder, num_samples=-1)

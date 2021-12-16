@@ -8,7 +8,7 @@ fine_tune_epochs = 40
 
 debug = False
 
-cur_model_id = 'Adam_SCCE_default_vagus_11'
+cur_model_id = 'custom_loss'
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'
 minimum_fascicle_area = 101
