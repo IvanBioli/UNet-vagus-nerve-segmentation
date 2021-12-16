@@ -4,39 +4,40 @@ import tensorflow as tf
 from keras import backend as K
 
 
-def pre_process_vectors(y_true, y_pred):
+def pre_process_vectors(y_true, y_pred, logits=True):
     y_true = tf.cast(y_true, tf.float32)
-    y_pred = tf.argmax(y_pred, axis=-1)
+    if logits:
+        y_pred = tf.argmax(y_pred, axis=-1)
     y_pred = tf.cast(y_pred, tf.float32)
     y_true = K.flatten(y_true)
     y_pred = K.flatten(y_pred)
     return y_true, y_pred
 
 
-def dice_loss(y_true, y_pred):
-    y_true, y_pred = pre_process_vectors(y_true, y_pred)
+def dice_loss(y_true, y_pred, logits=True):
+    y_true, y_pred = pre_process_vectors(y_true, y_pred, logits)
     numerator = 2 * K.sum(y_true * y_pred)
     denominator = K.sum(y_true + y_pred)
     return 1 - numerator / denominator
 
 
-def tversky_loss(y_true, y_pred):
-    y_true, y_pred = pre_process_vectors(y_true, y_pred)
+def tversky_loss(y_true, y_pred, logits=True):
+    y_true, y_pred = pre_process_vectors(y_true, y_pred, logits)
     beta = 0.3
     numerator = K.sum(y_true * y_pred)
     denominator = K.sum(y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred))
     return 1 - numerator / denominator
 
 
-def nerve_segmentation_loss(y_true, y_pred):
+def nerve_segmentation_loss(y_true, y_pred, logits=True):
     y_true = tf.cast(y_true, tf.float32)
     sparse_cce = keras.losses.SparseCategoricalCrossentropy()
     o = sparse_cce(y_true, y_pred)
     return tf.reduce_mean(o)
 
 
-def iou_score(y_true, y_pred):
-    y_true, y_pred = pre_process_vectors(y_true, y_pred)
+def iou_score(y_true, y_pred, logits=True):
+    y_true, y_pred = pre_process_vectors(y_true, y_pred, logits)
     intersection = K.sum(y_true * y_pred)
     union = K.sum(y_true) + K.sum(y_pred) - intersection
     return intersection / union

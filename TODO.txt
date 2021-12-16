@@ -50,3 +50,6 @@ Metrics: SPCC - dice loss - IoU - categorical accuracy - tversky loss - sparce m
 - Discussion:
     + Losses Discussion
     + Overfitting / Underfiting (epochs) - visualization on 40 vs 100 epochs
+
+
+////////////NOTE: need to change the 1 - pred and 1 - mask

@@ -2,38 +2,19 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import random
 from skimage.measure import regionprops, label
 from tensorflow import keras
 from loss import dice_loss, nerve_segmentation_loss, tversky_loss
 from eval import predict_mask
 
 from config import initialise_run, minimum_fascicle_area, watershed_coeff
+from data_utils import get_samples
 custom = {'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
-
-
-def get_samples(data_folder, test=False, num_samples=1, shuffle=True):
-    img_folder = data_folder + '/images'
-    img_paths = [img_folder + '/' + img_file for img_file in os.listdir(img_folder)]
-    if not test:
-        mask_folder = data_folder + '/annotations'
-        mask_paths = [mask_folder + '/' + mask_file for mask_file in os.listdir(mask_folder)]
-
-        paths = list(zip(img_paths, mask_paths))
-        if shuffle:
-            random.shuffle(paths)
-    else:
-        paths = img_paths
-
-    if num_samples == -1:
-        num_samples = len(paths)
-    return paths[:num_samples]
-
 
 def calculate_regions(pred, mask=None):
     regions_pred = regionprops(label(((1 - pred) * 255).astype(int)))
     if mask is not None:
-        regions_mask = regionprops(label(((1 - mask) * 255).astype(int)))
+        regions_mask = regionprops(label(((mask) * 255).astype(int)))
         return (regions_pred, regions_mask)
     else:
         return (regions_pred, None)
@@ -59,9 +40,9 @@ def show_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
         output_folder = os.path.join(os.getcwd(), 'results/visualisations/distributions')
         os.makedirs(output_folder, exist_ok=True)
         if test:
-            fname = 'Distribution for unlabelled test set'
+            fname = 'distribution_unlabelled_tes_set'
         else:
-            fname = 'Distribution for training set'
+            fname = 'distribution_training_set'
         out_fname = os.path.join(output_folder, fname)
 
     if not test:
@@ -164,7 +145,7 @@ def show_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
 
     # If postprocessing is involved
     if save:
-        plt.savefig(out_fname + '_predicted.jpg')
+        plt.savefig(out_fname + '.jpg')
     if show:
         plt.show()
 
