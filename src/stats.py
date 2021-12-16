@@ -12,7 +12,7 @@ from data_utils import get_samples
 custom = {'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
 def calculate_regions(pred, mask=None):
-    regions_pred = regionprops(label(((1 - pred) * 255).astype(int)))
+    regions_pred = regionprops(label(((pred) * 255).astype(int)))
     if mask is not None:
         regions_mask = regionprops(label(((mask) * 255).astype(int)))
         return (regions_pred, regions_mask)
@@ -149,16 +149,29 @@ def show_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     if show:
         plt.show()
 
+# Computes the average ratio between the areas of the fascicles and of the background
+def compute_area_ratio(sample_train):
+    tot_area_fascicles = 0
+    n_samples = len(sample_train)
+    for _, mask_path in sample_train:
+        mask = np.load(mask_path)
+        regions_mask = regionprops(label(((mask) * 255).astype(int)))
+        for r in regions_mask:
+            tot_area_fascicles = tot_area_fascicles + r.area
+    shape = mask.shape
+    avg_ratio = tot_area_fascicles / (n_samples * shape[0] * shape[1] - tot_area_fascicles)
+    return avg_ratio
 
 if __name__ == '__main__':
     initialise_run()
     model_save_file = os.path.join(os.getcwd(), 'model_checkpoints/Adam_SCC_512_default.h5')
     # Loading data from train folder
-    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/train')
+    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/train')
     sample_train = get_samples(train_folder, num_samples=-1)
     # Loading data from unlabelled folder
     # unlabelled_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/unlabelled')
     # sample_unlabelled = get_samples(unlabelled_folder, test=True, num_samples=-1)
     # Showing fascicles distribution
-    show_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True)
+    #show_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True)
     # show_fascicles_distribution(sample_unlabelled, trained_model_checkpoint=model_save_file, save=True)
+    print(compute_area_ratio(sample_train))

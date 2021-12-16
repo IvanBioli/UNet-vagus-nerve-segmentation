@@ -1,15 +1,18 @@
 import pickle
 
 from tensorflow import keras
+import tensorflow_addons as tfa
+from focal_loss import SparseCategoricalFocalLoss
+import tensorflow as tf
 
 from src.config import num_classes, batch_size, img_size, epochs
 from src.data_loader import VagusDataLoader
-from src.loss import iou_score, dice_loss, nerve_segmentation_loss, tversky_loss
+from src.loss import iou_score, dice_loss, nerve_segmentation_loss, tversky_loss, focal_tversky_loss, custom_loss
 
 
 def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
     _optimizer = keras.optimizers.Adam()
-    _loss = nerve_segmentation_loss
+    _loss = custom_loss
 
     model.compile(
         optimizer=_optimizer,
@@ -18,8 +21,10 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
             iou_score,
             dice_loss,
             tversky_loss,
+            focal_tversky_loss,
             keras.metrics.SparseCategoricalCrossentropy(),
             keras.metrics.SparseCategoricalAccuracy(),
+            tfa.losses.SigmoidFocalCrossEntropy()
         ]
     )
 

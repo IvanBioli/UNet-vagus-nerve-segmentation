@@ -15,8 +15,8 @@ def get_model_prediction(trained_model, input_image):
     prediction = np.argmax(prediction, axis=-1)
     return prediction
 
-def delete_small_regions(input_mask, threshold = 40):
-    regions_mask = regionprops(label(((1 - input_mask) * 255).astype(int)))
+def delete_small_regions(input_mask, threshold = 101):
+    regions_mask = regionprops(label((input_mask * 255).astype(int)))
     regions_to_delete = [x for x in regions_mask if x.area < threshold]
     for x in regions_to_delete:
         for c in x.coords:            
@@ -24,14 +24,14 @@ def delete_small_regions(input_mask, threshold = 40):
     return input_mask 
 
 def apply_watershed(mask, coeff_list=[0.35]):
-    thresh = ((1 - mask) * 255).astype('uint8')
+    thresh = (mask * 255).astype('uint8')
     img = cv2.merge((thresh,thresh,thresh))
     
     # Morhphological operations to remove noise - morphological opening
-    kernel = np.ones((3,3),np.uint8)
-    opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 2)
+    kernel = np.ones((3, 3), np.uint8)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations = 2)
     # We find what we are sure is background
-    sure_bg = cv2.dilate(opening,kernel,iterations=3)
+    sure_bg = cv2.dilate(opening, kernel, iterations=3)
     # Finding sure foreground area using distance transform and thresholding
     # intensities of the points inside the foreground regions are changed to 
     # distance their respective distances from the closest 0 value (boundary).
@@ -47,28 +47,17 @@ def apply_watershed(mask, coeff_list=[0.35]):
         # Add 10 to all labels so that sure background is not 0, but 10
         markers = markers + 10
         # Mark the region of unknown with zero
-        markers[unknown==255] = 0
+        markers[unknown == 255] = 0
         # Using watershed to have the markers
-        markers = cv2.watershed(img,markers)
+        markers = cv2.watershed(img, markers)
         # We draw a black border according to the markers
         img[markers == -1] = [255, 0, 0]
 
-        img[markers == -1] = [0, 0, 0]
+    return img
 
-    (_, mask_wat) = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 127, 255, cv2.THRESH_BINARY)
-    assert((np.unique(mask_wat) == [0, 255]).all())
-    mask_wat = 1 - mask_wat / 255 
-    
-    return mask_wat
-
-def predict_mask(trained_model, img, threshold = 15, coeff_list = [0]):
+def predict_mask(trained_model, img, threshold = 101, coeff_list = [0]):
     prediction = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
     prediction = delete_small_regions(prediction, threshold)
-    #prediction = apply_watershed(prediction, coeff_list)
-    # To delete artifacts of the watershed
-    #prediction = delete_small_regions(prediction, threshold)
-    prediction[prediction == 1.] = 1
-    prediction[prediction == 0.] = 0
     return prediction
 
 

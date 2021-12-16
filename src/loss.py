@@ -1,6 +1,7 @@
 import keras.losses
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 from keras import backend as K
 
 
@@ -23,11 +24,43 @@ def dice_loss(y_true, y_pred, logits=True):
 
 def tversky_loss(y_true, y_pred, logits=True):
     y_true, y_pred = pre_process_vectors(y_true, y_pred, logits)
-    beta = 0.3
+    # computed as the average ratio between the area of the fascicles and the area of the background
+    beta = 0.154
     numerator = K.sum(y_true * y_pred)
     denominator = K.sum(y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred))
     return 1 - numerator / denominator
 
+
+def focal_tversky_loss(y_true, y_pred, logits=True):
+    gamma = 4 / 3
+    return tversky_loss(y_true, y_pred, logits)**gamma
+
+def diff_tversky_loss(y_true, y_pred):
+    y_true = tf.cast(y_true, tf.float32)
+    #y_pred = tf.cast(y_pred, tf.float32)
+    #y_true = K.flatten(y_true)
+    #y_pred = K.flatten(y_pred)
+    beta = 0.154
+    numerator = K.sum(y_true * y_pred)
+    denominator = K.sum(y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred))
+    return 1 - numerator / denominator
+'''
+def focal_loss(gamma=2., alpha=.5):
+	def focal_loss_fixed(y_true, y_pred):
+		pt_1 = tf.where(tf.equal(y_true, 1), y_pred, tf.ones_like(y_pred))
+		pt_0 = tf.where(tf.equal(y_true, 0), y_pred, tf.zeros_like(y_pred))
+		return -K.mean(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1+K.epsilon())) - K.mean((1 - alpha) * K.pow(pt_0, gamma) * K.log(1. - pt_0 + K.epsilon()))
+	return focal_loss_fixed
+'''
+def focal_loss(y_true, y_pred):
+    y_true = tf.cast(y_true, tf.float32)
+    gamma = 1
+    return -K.mean(K.pow(1 - y_pred, gamma) * K.log(y_pred + K.epsilon()) * y_true + K.pow(y_pred, gamma) * K.log(1 - y_pred + K.epsilon()) * (1 - y_true))
+
+def custom_loss(y_true, y_pred):
+    bce = keras.losses.SparseCategoricalCrossentropy()
+    fl = tfa.losses.SigmoidFocalCrossEntropy()
+    return bce(y_true, y_pred) + fl(y_true, y_pred)
 
 def nerve_segmentation_loss(y_true, y_pred, logits=True):
     y_true = tf.cast(y_true, tf.float32)
