@@ -20,7 +20,7 @@ def get_random_affine_transformation(white_background=True):
         return img
 
     affine_transform_args = dict(
-        theta=np.random.randint(0, 40),
+        theta=np.random.randint(0, 359),
         tx=int(sample_rand_float() * img_size[1]),
         ty=int(sample_rand_float() * img_size[1]),
         shear=np.random.randint(0, 30),

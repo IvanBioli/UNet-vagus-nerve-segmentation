@@ -12,6 +12,7 @@ from stats import get_samples, calculate_regions, compute_bins
 from augmentation import get_random_affine_transformation
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
+
 custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss, 'focal_tversky_loss': focal_tversky_loss, 'SigmoidFocalCrossEntropy': tfa.losses.SigmoidFocalCrossEntropy(), 'focal_loss': focal_loss, 'custom_loss': custom_loss}
 
 def plot_augmented_images(img_path, num_aug=6, num_aug_wcolor=2, save=False, show=True):
@@ -80,7 +81,7 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
         num_subplt = 4
         sub_folder = 'default'
 
-    fig, axs = plt.subplots(len(path_list), num_subplt, figsize=(num_subplt * 3, len(path_list) * 3))
+    fig, axs = plt.subplots(len(path_list), num_subplt, figsize=(num_subplt * 2, len(path_list) * 2))
 
     if save:
         output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/', sub_folder)
@@ -103,14 +104,16 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
 
         axs[k, 3].imshow(mask, cmap='gray', interpolation='none')
         axs[k, 3].imshow(pred, cmap='viridis', alpha=0.5, interpolation='none')
-        
+
         if wstats:
+            scce = keras.losses.SparseCategoricalCrossentropy()
+            fl = tfa.losses.SigmoidFocalCrossEntropy()
             axs[k, 4].text(0.5, 0.5,
-                # 'BCE: ' + str(keras.metrics.SparseCategoricalCrossentropy()(mask, pred).numpy()) + '\n' +
+                #'BCE: ' + str(scce(mask, pred).numpy()) + '\n' +
                 'IoU: ' + str(iou_score(mask, pred, logits=False).numpy()) + '\n' +
                 'DL: ' + str(dice_loss(mask, pred, logits=False).numpy()) + '\n' +
-                'TL: ' + str(tversky_loss(mask, pred, logits=False).numpy()) + '\n'+
-                'FTL: ' + str(focal_tversky_loss(mask, pred, logits=False).numpy()) + '\n',
+                'TL: ' + str(tversky_loss(mask, pred, logits=False).numpy()) + '\n',#+
+                #'FL: ' + str(fl(mask, pred).numpy()) + '\n',
                 horizontalalignment='center', verticalalignment='center', transform=axs[k, 4].transAxes)
 
         for i in range(num_subplt):
@@ -180,7 +183,7 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
         eccentricity_post = eccentricity_post + [p.eccentricity for p in regions_post]
         num_fascicles_post.append(len(regions_post))
 
-    fig, axs = plt.subplots(1, 3, figsize=(20, 12))
+    fig, axs = plt.subplots(1, 3, figsize=(10, 6))
 
     nbins_area = 50
     nbins_fascicles = 10
@@ -281,53 +284,61 @@ def plot_model_losses_and_metrics(loss_filepath):
     with open(loss_filepath, 'rb') as loss_file:
         model_details = pickle.load(loss_file)
     print(model_details.keys())
-    fig, axs = plt.subplots(6, figsize=(5,10))
+    fig, axs = plt.subplots(7, figsize=(5,10))
     best = np.argmin(model_details['val_loss'])
     print('\nBest at epoch: ', best)
-    # SparseCategoricalCrossentropy
-    axs[0].plot(model_details['sparse_categorical_crossentropy'], label = 'Training set')
-    axs[0].plot(model_details['val_sparse_categorical_crossentropy'], label = 'Validation set')
-    axs[0].set(xlabel="Epochs", ylabel="BCE")
-    axs[0].set_ylim(bottom = 0)
+    # Loss
+    axs[0].plot(model_details['loss'], label='Training set')
+    axs[0].plot(model_details['val_loss'], label='Validation set')
+    axs[0].set(xlabel="Epochs", ylabel="Loss")
+    axs[0].set_ylim(bottom=0)
     axs[0].legend()
-    print('\nBCE:\ntraining = ', model_details['sparse_categorical_crossentropy'][best], '\ntest = ', model_details['val_sparse_categorical_crossentropy'][best])
-    # IoU
-    axs[1].plot(model_details['iou_score'], label = 'Training set')
-    axs[1].plot(model_details['val_iou_score'], label = 'Validation set')
-    axs[1].set(xlabel="Epochs", ylabel="IoU")
-    axs[1].set_ylim([0,1])
+    print('\nLoss:\ntraining = ', model_details['loss'][best], '\nvalidation = ',
+          model_details['val_loss'][best])
+    # SparseCategoricalCrossentropy
+    axs[1].plot(model_details['sparse_categorical_crossentropy'], label = 'Training set')
+    axs[1].plot(model_details['val_sparse_categorical_crossentropy'], label = 'Validation set')
+    axs[1].set(xlabel="Epochs", ylabel="BCE")
+    axs[1].set_ylim(bottom = 0)
     axs[1].legend()
-    print('\nIoU:\ntraining = ', model_details['iou_score'][best], '\ntest = ', model_details['val_iou_score'][best])
-    # SparseCategoricalAccuracy
-    axs[2].plot(model_details['sparse_categorical_accuracy'], label = 'Training set')
-    axs[2].plot(model_details['val_sparse_categorical_accuracy'], label = 'Validation set')
-    axs[2].set(xlabel="Epochs", ylabel="Categorical  Accuracy")
-    axs[2].set_ylim(top = 1)
+    print('\nBCE:\ntraining = ', model_details['sparse_categorical_crossentropy'][best], '\nvalidation = ', model_details['val_sparse_categorical_crossentropy'][best])
+    # IoU
+    axs[2].plot(model_details['iou_score'], label = 'Training set')
+    axs[2].plot(model_details['val_iou_score'], label = 'Validation set')
+    axs[2].set(xlabel="Epochs", ylabel="IoU")
+    axs[2].set_ylim([0,1])
     axs[2].legend()
-    print('\nCategorical Accuracy:\ntraining = ', model_details['sparse_categorical_accuracy'][best], '\ntest = ', model_details['val_sparse_categorical_accuracy'][best])
-    # DiceLoss
-    axs[3].plot(model_details['dice_loss'], label = 'Training set')
-    axs[3].plot(model_details['val_dice_loss'], label = 'Validation set')
-    axs[3].set(xlabel="Epochs", ylabel="Dice Loss")
-    axs[3].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+    print('\nIoU:\ntraining = ', model_details['iou_score'][best], '\nvalidation = ', model_details['val_iou_score'][best])
+    # SparseCategoricalAccuracy
+    axs[3].plot(model_details['sparse_categorical_accuracy'], label = 'Training set')
+    axs[3].plot(model_details['val_sparse_categorical_accuracy'], label = 'Validation set')
+    axs[3].set(xlabel="Epochs", ylabel="Categorical  Accuracy")
+    axs[3].set_ylim(top = 1)
     axs[3].legend()
-    print('\nDice Loss:\ntraining = ', model_details['dice_loss'][best], '\ntest = ', model_details['val_dice_loss'][best])
-    # Tversky loss
-    axs[4].plot(model_details['tversky_loss'], label='Training set')
-    axs[4].plot(model_details['val_tversky_loss'], label='Validation set')
-    axs[4].set(xlabel="Epochs", ylabel="Tversky Loss")
+    print('\nCategorical Accuracy:\ntraining = ', model_details['sparse_categorical_accuracy'][best], '\nvalidation = ', model_details['val_sparse_categorical_accuracy'][best])
+    # DiceLoss
+    axs[4].plot(model_details['dice_loss'], label = 'Training set')
+    axs[4].plot(model_details['val_dice_loss'], label = 'Validation set')
+    axs[4].set(xlabel="Epochs", ylabel="Dice Loss")
     axs[4].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
     axs[4].legend()
-    print('\nTversky Loss:\ntraining = ', model_details['tversky_loss'][best], '\ntest = ',
+    print('\nDice Loss:\ntraining = ', model_details['dice_loss'][best], '\nvalidation = ', model_details['val_dice_loss'][best])
+    # Tversky loss
+    axs[5].plot(model_details['tversky_loss'], label='Training set')
+    axs[5].plot(model_details['val_tversky_loss'], label='Validation set')
+    axs[5].set(xlabel="Epochs", ylabel="Tversky Loss")
+    axs[5].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+    axs[5].legend()
+    print('\nTversky Loss:\ntraining = ', model_details['tversky_loss'][best], '\nvalidation = ',
           model_details['val_tversky_loss'][best])
-    # Focal Tversky loss
-    #axs[5].plot(model_details['focal_tversky_loss'], label='Training set')
-    #axs[5].plot(model_details['val_focal_tversky_loss'], label='Validation set')
-    #axs[5].set(xlabel="Epochs", ylabel="Focal Tversky Loss")
-    #axs[5].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
-    #axs[5].legend()
-    #print('\nFocal Tversky Loss:\ntraining = ', model_details['focal_tversky_loss'][best], '\ntest = ',
-    #      model_details['val_focal_tversky_loss'][best])
+    # Focal Loss
+    axs[6].plot(model_details['sigmoid_focal_crossentropy'], label='Training set')
+    axs[6].plot(model_details['val_sigmoid_focal_crossentropy'], label='Validation set')
+    axs[6].set(xlabel="Epochs", ylabel="Focal Loss")
+    axs[6].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+    axs[6].legend()
+    print('\nFocal Loss:\ntraining = ', model_details['sigmoid_focal_crossentropy'][best], '\nvalidation = ',
+          model_details['val_sigmoid_focal_crossentropy'][best])
     plt.tight_layout()
     plt.show()
 
@@ -340,24 +351,26 @@ if __name__ == '__main__':
     model_save_file = os.path.join(os.getcwd(), model_path)
 
     ##################### Show Model Metrics ##########################################
-    plot_model_losses_and_metrics('model_losses/Adam_SCCE_default_vagus_11.pkl')
+    #plot_model_losses_and_metrics('model_losses/Adam_SCCE_default_vagus_11.pkl')
 
     ##################### Show augmented images ##########################################
-    #sample_img_path = get_samples(train_folder, test=True)
-    #sample_img_path = sample_img_path[0]
-    #plot_augmented_images(sample_img_path, num_aug=4, num_aug_wcolor=2, save=True, show=True)
+    sample_img_path = get_samples(train_folder, test=True)
+    sample_img_path = sample_img_path[0]
+    plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
 
     ##################### Show mask vs prediction #######################################
     path_list = get_samples(validation_folder, num_samples=3)
-    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
-    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
-
-    #################### Show distributions #############################################
-    #sample_train = get_samples(train_folder, num_samples=-1)
-    #plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=False)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=False, show=True)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=False, show=True)
 
     ##################### Show watershed prediction #############################################
-    #unlabelled_sample = get_samples(unlabelled_folder, test=True, num_samples=5)
-    #for img_path in unlabelled_sample:
-    #    plot_watershed(img_path=img_path, trained_model_checkpoint=model_save_file, save=True, show=False)
+    unlabelled_sample = get_samples(unlabelled_folder, test=True, num_samples=2)
+    for img_path in unlabelled_sample:
+        plot_watershed(img_path=img_path, trained_model_checkpoint=model_save_file, save=False, show=True)
+
+    #################### Show distributions #############################################
+    sample_train = get_samples(train_folder, num_samples=-1)
+    plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True)
+
+
 
