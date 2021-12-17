@@ -78,7 +78,7 @@ def iou_score(y_true, y_pred, logits=True):
 
 if __name__ == '__main__':
     """ Test IoU values for images """
-    from src.config import initialise_run
+    from config import initialise_run
 
     initialise_run()
 

@@ -1,8 +1,8 @@
 from config import img_size, num_classes, initialise_run, cur_model_id
 from data_utils import input_target_path_pairs
 from model import get_model
-from src.fine_tune import fine_tune
-from src.train import train
+from fine_tune import fine_tune
+from train import train
 
 if __name__ == '__main__':
     initialise_run()

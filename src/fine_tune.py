@@ -2,9 +2,9 @@ import pickle
 
 from tensorflow import keras
 
-from src.config import num_classes, batch_size, img_size, fine_tune_epochs
-from src.data_loader import VagusDataLoader
-from src.loss import nerve_segmentation_loss, dice_loss, tversky_loss
+from config import num_classes, batch_size, img_size, fine_tune_epochs
+from data_loader import VagusDataLoader
+from loss import nerve_segmentation_loss, dice_loss, tversky_loss
 
 
 def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers, train_img_target_pairs, val_img_target_pairs):
