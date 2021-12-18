@@ -11,7 +11,11 @@ seed = 0
 
 debug = False
 
+<<<<<<< Updated upstream
 cur_model_id = 'FL_and_BCE_Adam_default'
+=======
+cur_model_id = 'BCE_and_FL_tf'
+>>>>>>> Stashed changes
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'
 minimum_fascicle_area = 101

@@ -313,6 +313,7 @@ if __name__ == '__main__':
     train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/train')
     validation_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/validation')
     unlabelled_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/unlabelled')
+    transfer_folder = os.path.join(os.getcwd(), 'data/transfer_learning/train')
 
     model_save_file = os.path.join(os.getcwd(), model_path)
 

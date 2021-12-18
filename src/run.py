@@ -12,8 +12,8 @@ if __name__ == '__main__':
     m = train(
         model=model,
         model_id=cur_model_id,
-        train_img_target_pairs=input_target_path_pairs('data/vagus_dataset_11/train'),
-        val_img_target_pairs=input_target_path_pairs('data/vagus_dataset_11/validation')
+        train_img_target_pairs=input_target_path_pairs('data/transfer_learning/train'),
+        val_img_target_pairs=input_target_path_pairs('data/transfer_learning/validation')
     )
     # m = fine_tune(
     #     trained_model_path=trained_model_path,
