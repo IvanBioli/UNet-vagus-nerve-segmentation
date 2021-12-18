@@ -50,7 +50,7 @@ def apply_watershed(mask, coeff_list=[0.35]):
         markers[unknown == 255] = 0
         # Using watershed to have the markers
         markers = cv2.watershed(img, markers)
-        # We draw a black border according to the markers
+        # We draw a red border according to the markers
         img[markers == -1] = [255, 0, 0]
 
     return img
