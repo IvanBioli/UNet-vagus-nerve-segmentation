@@ -51,5 +51,25 @@ Metrics: SPCC - dice loss - IoU - categorical accuracy - tversky loss - sparce m
     + Losses Discussion
     + Overfitting / Underfiting (epochs) - visualization on 40 vs 100 epochs
 
-
 ////////////NOTE: need to change the 1 - pred and 1 - mask
+
+#############################################################################################
+TODO KHANH:
+- Compute the median of the areas in the masks (is the 0.5 quantile, you can add it to the prints of the stats)
+- For the predictions:
+	- remove the small regions using my function.
+	- before the watershed, save the regions.
+	- apply the watershed
+	- go through all the regions:
+		- if the area is above the 0.99 quantile of the areas colour in red
+		- if the eccentricity is above the 0.99 quantile of the eccentricities or it is below the 0.01
+		  quantile of the eccentricities, color in red
+		- if you have colored a region in red, divide its area by the median and add it to the stats 
+		  as multiple regions (if this is not clear, I will do it, just try to do the previous parts and push)
+- Compute the color histogram on the training set (google something) and compute it on the unlabelled set. Have it printed
+and saved
+
+TODO UMER:
+	- README
+	- necessary packages
+	- comment the code
