@@ -7,7 +7,7 @@ import numpy as np
 from tensorflow import keras
 import tensorflow_addons as tfa
 from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, focal_tversky_loss, focal_loss, custom_loss
-from eval import apply_watershed, predict_mask
+from eval import predict_mask, get_model_prediction
 from stats import get_samples, calculate_regions, compute_bins
 from augmentation import get_random_affine_transformation
 
@@ -90,7 +90,7 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
         img = np.load(path[0])
         mask = np.load(path[1])
 
-        pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area)
+        pred = predict_mask(trained_model, img)
 
         axs[k, 0].imshow(img)
         axs[k, 1].imshow(mask, cmap='gray', interpolation='none')
@@ -118,7 +118,7 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
     if show:
         plt.show()
 
-def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None, save=False, show=True):
+def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None, save=False, show=True, postprocessing = False):
     
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects = custom)
@@ -139,9 +139,6 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     areas_pred = []
     num_fascicles_pred = []
     eccentricity_pred = []
-    areas_post = []
-    num_fascicles_post = []
-    eccentricity_post = []
 
     for p in paths:
         if not test:
@@ -152,7 +149,10 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
             mask = None
 
         img = np.load(img_path)
-        pred = predict_mask(trained_model, img, 0)
+        if postprocessing:
+            pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+        else:
+            pred = predict_mask(trained_model, img)
 
         regions_pred, regions_mask = calculate_regions(pred, mask)
         
@@ -167,9 +167,6 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
         eccentricity_pred = eccentricity_pred + [p.eccentricity for p in regions_pred]
         num_fascicles_pred.append(len(regions_pred))
 
-        areas_post = areas_post + [p.area for p in regions_post]
-        eccentricity_post = eccentricity_post + [p.eccentricity for p in regions_post]
-        num_fascicles_post.append(len(regions_post))
 
     fig, axs = plt.subplots(1, 3, figsize=(10, 6))
 
@@ -195,8 +192,7 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     axs[0].set_xlabel('Areas (pixels)')
     axs[0].set_ylabel('Occurrencies')
     axs[0].legend(loc='upper right')
-    axs[0].set_title('Histogram of Fascicles Areas\n0.01-quantile: {}\n0.99-quantile: {}'.
-                        format(np.quantile(areas_mask, 0.01), np.round(np.quantile(areas_mask, 0.99), 4)))
+    axs[0].set_title('Histogram of Fascicles Areas')
 
     # Histogram of Number of fascicles Areas for the predictions
     axs[1].hist(num_fascicles_pred, bins=bins_fascicles, alpha=0.5, label='Prediction')
@@ -210,8 +206,7 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     axs[2].set_xlabel('Eccentricity')
     axs[2].set_ylabel('Occurrencies')
     axs[2].legend(loc='upper right')
-    axs[2].set_title('Histogram of Eccentricity\n0.01-quantile: {}\n0.99-quantile: {}'.
-                        format(np.round(np.quantile(eccentricity_mask, 0.01), 4), np.round(np.quantile(eccentricity_mask, 0.99), 4)))
+    axs[2].set_title('Histogram of Eccentricity')
 
     # Print the quantiles of the areas and the eccentricity for the masks:
     if not test:
@@ -222,17 +217,19 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
 
     # If postprocessing is involved
     if save:
+        if postprocessing:
+            out_fname = out_fname + '_postprocessed'
         plt.savefig(out_fname + '.png')
     if show:
         plt.show()
 
-def plot_watershed(path_list, trained_model_checkpoint=None, save=False, show=True): 
+def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, show=True, postprocessing = False):
     
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
 
     if save:
-        output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/watershed')
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/postprocessed')
         os.makedirs(output_folder, exist_ok=True)
         out_fname = output_folder
 
@@ -243,18 +240,17 @@ def plot_watershed(path_list, trained_model_checkpoint=None, save=False, show=Tr
     for k, img_path in enumerate(path_list):
         print(img_path)
         img = np.load(img_path)
-        pred = predict_mask(trained_model, img, threshold=0)
-        pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area)
-        pred_wts = apply_watershed(pred_post)
+        pred = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
+        pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
 
         axs[k, 0].imshow(img)
 
         axs[k, 1].imshow(pred, cmap='gray')
 
-        axs[k, 2].imshow(pred_wts)
+        axs[k, 2].imshow(pred_post, cmap='gray')
 
         axs[k, 3].imshow(img)
-        axs[k, 3].imshow(pred_wts, alpha=0.5)
+        axs[k, 3].imshow(pred_post, cmap='gray', alpha=0.5)
 
         for i in range(4):
             axs[k, i].xaxis.set_major_locator(ticker.NullLocator())
@@ -267,21 +263,20 @@ def plot_watershed(path_list, trained_model_checkpoint=None, save=False, show=Tr
 
 
     if save:
-        plt.savefig(out_fname + '/predictions_with_water_shed.png')
+        plt.savefig(out_fname + '/predictions_with_postprocessing.png')
     if show:
         plt.show()
 
 # To plot the model losses and metrics
-def plot_model_losses_and_metrics(loss_filepath, save=False, show=True):
+def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=True):
 
     if save:
-        output_folder = os.path.join(os.getcwd(), 'results/visualisations/losses')
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/training_metrics')
         os.makedirs(output_folder, exist_ok=True)
         out_fname = output_folder
 
     with open(loss_filepath, 'rb') as loss_file:
         model_details = pickle.load(loss_file)
-    print(model_details.keys())
     fig, axs = plt.subplots(2, figsize=(5,5))
     best = np.argmin(model_details['val_loss'])
     print('\nBest at epoch: ', best)
@@ -309,7 +304,7 @@ def plot_model_losses_and_metrics(loss_filepath, save=False, show=True):
     plt.tight_layout()
     
     if save:
-        plt.savefig(out_fname + '/losses_and_metrics.png')
+        plt.savefig(out_fname + '/training_metrics_' + model_name + '.png')
     if show:
         plt.show()
 
@@ -322,7 +317,9 @@ if __name__ == '__main__':
     model_save_file = os.path.join(os.getcwd(), model_path)
 
     ##################### Show Model Metrics ##########################################
-    #plot_model_losses_and_metrics('model_losses/BCE_and_FL_Adam_default.pkl', save=True, show=True)
+    plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
+    plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
+    plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
 
     ##################### Show augmented images ##########################################
     sample_img_path = get_samples(train_folder, test=True)
@@ -334,13 +331,14 @@ if __name__ == '__main__':
     plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
     plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
-    ##################### Show watershed prediction #############################################
-    #unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
-    #plot_watershed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+    ##################### Show post processed prediction #############################################
+    unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
+    plot_postprocessed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
     #################### Show distributions #############################################
-    #sample_train = get_samples(train_folder, num_samples=-1)
-    #plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True)
+    sample_train = get_samples(train_folder, num_samples=-1)
+    plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing = False)
+    plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
 
 
 

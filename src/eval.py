@@ -3,6 +3,7 @@ from tensorflow import keras
 from skimage.measure import label, regionprops
 import cv2
 import matplotlib.pyplot as plt
+from config import minimum_fascicle_area, watershed_coeff
 
 # from src.config import num_classes, batch_size
 # from src.visualisation import show_overlay_result, show_result_test
@@ -50,14 +51,27 @@ def apply_watershed(mask, coeff_list=[0.35]):
         markers[unknown == 255] = 0
         # Using watershed to have the markers
         markers = cv2.watershed(img, markers)
-        # We draw a red border according to the markers
-        img[markers == -1] = [255, 0, 0]
+        # Dilatating watershed lines to have a better visualization
+        watershed_lines = np.zeros(shape=np.shape(markers))
+        watershed_lines[markers == -1] = 1
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        watershed_lines_thick = cv2.dilate(watershed_lines, kernel, iterations=1)
+        # Drawing black watershed lines
+        img[watershed_lines_thick == 1] = [0, 0, 0]
+
+    # Converting back image to BG
+    (_, img) = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 127, 255, cv2.THRESH_BINARY)
+    # Rescaling to [0, 1]
+    img = img / 255
 
     return img
 
-def predict_mask(trained_model, img, threshold = 101, coeff_list = [0]):
+def predict_mask(trained_model, img, threshold = 0, coeff_list = None):
     prediction = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
     prediction = delete_small_regions(prediction, threshold)
+    if coeff_list is not None:
+        prediction = apply_watershed(prediction, coeff_list)
+        prediction = delete_small_regions(prediction, threshold)
     return prediction
 
 
