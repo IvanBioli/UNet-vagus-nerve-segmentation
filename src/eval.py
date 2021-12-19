@@ -8,7 +8,7 @@ from config import minimum_fascicle_area, watershed_coeff
 # from src.config import num_classes, batch_size
 # from src.visualisation import show_overlay_result, show_result_test
 from config import num_classes, batch_size
-from visualisation import show_overlay_result, show_result_test
+# from visualisation import show_overlay_result, show_result_test
 
 
 def get_model_prediction(trained_model, input_image):

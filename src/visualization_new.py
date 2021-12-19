@@ -10,6 +10,7 @@ from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, fo
 from eval import predict_mask, get_model_prediction
 from stats import get_samples, calculate_regions, compute_bins
 from augmentation import get_random_affine_transformation
+from post_processing import draw_outliers_regions
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
 
@@ -233,7 +234,7 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
         os.makedirs(output_folder, exist_ok=True)
         out_fname = output_folder
 
-    fig, axs = plt.subplots(len(path_list), 4, figsize=(8, len(path_list) * 2))
+    fig, axs = plt.subplots(len(path_list), 5, figsize=(10, len(path_list) * 2))
 
     # fig, axs = plt.subplots(1, 4, figsize=(10, 6))
 
@@ -242,6 +243,7 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
         img = np.load(img_path)
         pred = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
         pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+        pred_out = draw_outliers_regions(pred_post)
 
         axs[k, 0].imshow(img)
 
@@ -249,17 +251,20 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
 
         axs[k, 2].imshow(pred_post, cmap='gray')
 
-        axs[k, 3].imshow(img)
-        axs[k, 3].imshow(pred_post, cmap='gray', alpha=0.5)
+        axs[k, 3].imshow(pred_out)
 
-        for i in range(4):
+        axs[k, 4].imshow(img)
+        axs[k, 4].imshow(pred_post, cmap='gray', alpha=0.5)
+
+        for i in range(5):
             axs[k, i].xaxis.set_major_locator(ticker.NullLocator())
             axs[k, i].yaxis.set_major_locator(ticker.NullLocator())
 
     axs[0, 0].set_title('Original Image')
     axs[0, 1].set_title('Prediction before\n postprocesing')
     axs[0, 2].set_title('Prediction after\n postprocessing')
-    axs[0, 3].set_title('Prediction overlayed\n onto image')
+    axs[0, 2].set_title('Prediction with\n outliers displayed')
+    axs[0, 4].set_title('Prediction overlayed\n onto image')
 
 
     if save:
@@ -318,28 +323,28 @@ if __name__ == '__main__':
     model_save_file = os.path.join(os.getcwd(), model_path)
 
     ##################### Show Model Metrics ##########################################
-    plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
-    plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
-    plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
+    # plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
+    # plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
+    # plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
 
     ##################### Show augmented images ##########################################
-    sample_img_path = get_samples(train_folder, test=True)
-    sample_img_path = sample_img_path[0]
-    plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
+    # sample_img_path = get_samples(train_folder, test=True)
+    # sample_img_path = sample_img_path[0]
+    # plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
 
     ##################### Show mask vs prediction #######################################
-    path_list = get_samples(validation_folder, num_samples=3)
-    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
-    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+    # path_list = get_samples(validation_folder, num_samples=3)
+    # plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
+    # plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
     ##################### Show post processed prediction #############################################
     unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
     plot_postprocessed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
     #################### Show distributions #############################################
-    sample_train = get_samples(train_folder, num_samples=-1)
-    plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing = False)
-    plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
+    # sample_train = get_samples(train_folder, num_samples=-1)
+    # plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing = False)
+    # plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
 
 
 
