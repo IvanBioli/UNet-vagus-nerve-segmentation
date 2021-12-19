@@ -68,6 +68,37 @@ def compute_area_ratio(sample_train):
     avg_ratio = tot_area_fascicles / (n_samples * shape[0] * shape[1] - tot_area_fascicles)
     return avg_ratio
 
+# compute color histograms of an image
+def get_image_histogram(img):
+    hist = np.zeros([3, 256])
+    
+    img_ = np.floor(img * 255)
+    
+    for x in range(img_.shape[0]):
+        for y in range(img_.shape[1]):
+            r = int(img_[x, y, 0])
+            g = int(img_[x, y, 1])
+            b = int(img_[x, y, 2])
+            
+            hist[0, r] += 1
+            hist[1, g] += 1
+            hist[2, b] += 1
+    
+    return hist
+
+# compute color histograms of a images dataset
+def get_dataset_histogram(path_list):
+    set_hist = np.zeros([3, 256])
+    
+    for img_path in path_list:
+        img = np.load(img_path)
+        
+        img_hist = get_image_histogram(img)
+        set_hist = np.add(set_hist, img_hist)
+        
+    set_hist = set_hist / len(path_list)
+    return set_hist
+
 if __name__ == '__main__':
     initialise_run()
     model_save_file = os.path.join(os.getcwd(), 'model_checkpoints/Adam_SCC_512_default.h5')
