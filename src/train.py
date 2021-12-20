@@ -17,7 +17,7 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
         :param val_img_target_pairs - validation img mask pairs
     """
     _optimizer = keras.optimizers.Adam()
-    _loss = custom_loss
+    _loss = custom_loss  # change loss functions here
 
     model.compile(
         optimizer=_optimizer,

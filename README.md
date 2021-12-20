@@ -17,6 +17,8 @@ conda env create -f vagus.yml
 
 Make sure conda is installed on your computer otherwise visit https://docs.anaconda.com/anaconda/install/index.html
 
+Alternatively, there is also a requirements.txt file provided. 
+
 ### Get Data
 
 Steps are only required if training the model
@@ -28,5 +30,7 @@ Steps are only required if training the model
 ## Training
 
 1. Run `src/run.py`
+2. To investigate different loss functions change the `_loss` in `src/train.py`. Refer to keras documentation for appropriate loss functions. Examples are provided in `src/loss.py`.
 
 ## Evaluation
+
