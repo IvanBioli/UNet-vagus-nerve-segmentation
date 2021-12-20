@@ -9,7 +9,7 @@ def get_outlier_regions(regions, area_threshold=3101, eccen_threshold=[0.33, 0.9
             outliers.append(r)
     return outliers
 
-def draw_outliers_regions(input_mask, area_threshold=3101, eccen_threshold=[0.33, 0.95]):
+def draw_outliers_regions(input_mask, area_threshold=3101, eccen_threshold=[0, 0.95]):
     modified = np.dstack(([input_mask, input_mask, input_mask]))
     regions = calculate_regions(input_mask)[0]
     outliers = get_outlier_regions(regions, area_threshold, eccen_threshold)

@@ -71,7 +71,7 @@ def compute_area_ratio(sample_train):
 # compute color histograms of an image
 def get_image_histogram(img):
     hist = np.zeros([3, 256])
-    
+
     img_ = np.floor(img * 255)
     
     for x in range(img_.shape[0]):
@@ -83,7 +83,8 @@ def get_image_histogram(img):
             hist[0, r] += 1
             hist[1, g] += 1
             hist[2, b] += 1
-    
+    # Percentage of pixels
+    hist = hist / (img.shape[0] * img.shape[1]) * 100
     return hist
 
 # compute color histograms of a images dataset

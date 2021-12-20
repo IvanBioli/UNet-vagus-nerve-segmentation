@@ -6,6 +6,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 from tensorflow import keras
 import tensorflow_addons as tfa
+import cv2
 from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, focal_tversky_loss, focal_loss, custom_loss
 from eval import predict_mask, get_model_prediction
 from stats import get_samples, calculate_regions, compute_bins, get_image_histogram, get_dataset_histogram
@@ -26,28 +27,34 @@ def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
 
     set_hist = get_dataset_histogram(dataset_path_list)
     xticks = [i for i in range(256)]
+    color = ('r', 'g', 'b')
 
-    fig, axs = plt.subplots(len(path_list), 3, figsize=(10, len(path_list) * 2),  gridspec_kw={'width_ratios': [1, 2, 2]})
+    fig, axs = plt.subplots(len(path_list) + 1, 4, figsize=(10, (len(path_list)+1) * 2))
+
+    axs[0, 0].text(0.5, 0.5, 'Average on\ntraining set', horizontalalignment='center', verticalalignment='center', transform=axs[0, 0].transAxes)
+    axs[0, 0].axis('off')
+    for i, col in enumerate(color):
+        axs[0, i+1].plot(xticks, set_hist[i], color=col)
+        axs[0, i+1].set_xlabel('Colour value')
+    axs[0, 1].set_ylabel('% of pixels')
 
     for k, path in enumerate(path_list):
+        k = k+1
         img = np.load(path)
         img_hist = get_image_histogram(img)
-
         axs[k, 0].imshow(img)
+        axs[k, 0].axis('off')
 
-        axs[k, 1].bar(xticks, img_hist[0], color='red', alpha=0.3)
-        axs[k, 1].bar(xticks, img_hist[1], color='green', alpha=0.3)
-        axs[k, 1].bar(xticks, img_hist[2], color='blue', alpha=0.3)
-        # axs[k, 1].set_yscale('log')
+        for i, col in enumerate(color):
+            axs[k, i+1].plot(xticks, img_hist[i], color=col)
+        axs[k, 1].set_ylabel('% of pixels')
 
-        axs[k, 2].bar(xticks, set_hist[0], color='red', alpha=0.3)
-        axs[k, 2].bar(xticks, set_hist[1], color='green', alpha=0.3)
-        axs[k, 2].bar(xticks, set_hist[2], color='blue', alpha=0.3)
-        # axs[k, 2].set_yscale('log')
-
-    axs[0, 0].set_title('Original image')
-    axs[0, 1].set_title('Color histogram\nof image')
-    axs[0, 2].set_title('Color histogram\nof dataset')
+    axs[0, 1].set_title('Histogram of\nR channel')
+    axs[0, 2].set_title('Histogram of\nG channel')
+    axs[0, 3].set_title('Histogram of\nB channel')
+    axs[-1, 1].set_xlabel('Colour value')
+    axs[-1, 2].set_xlabel('Colour value')
+    axs[-1, 3].set_xlabel('Colour value')
 
     if save:
         plt.savefig(out_fname + '/color_histograms.png')
@@ -210,9 +217,9 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
 
     fig, axs = plt.subplots(1, 3, figsize=(10, 6))
 
-    nbins_area = 50
+    nbins_area = 30
     nbins_fascicles = 10
-    nbins_eccentricity = 50
+    nbins_eccentricity = 30
     if not test:
         # Computing the bins for the areas' histogram and plotting the histogram
         bins_areas = compute_bins(nbins_area, areas_pred, areas_mask)
@@ -230,21 +237,21 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     # Histogram of Fascicles Areas for the predictions
     axs[0].hist(areas_pred, bins=bins_areas, alpha=0.5, label='Prediction')
     axs[0].set_xlabel('Areas (pixels)')
-    axs[0].set_ylabel('Occurrencies')
+    axs[0].set_ylabel('Number of Occurrencies')
     axs[0].legend(loc='upper right')
     axs[0].set_title('Histogram of Fascicles Areas')
 
     # Histogram of Number of fascicles Areas for the predictions
     axs[1].hist(num_fascicles_pred, bins=bins_fascicles, alpha=0.5, label='Prediction')
     axs[1].set_xlabel('Number of Fascicles')
-    axs[1].set_ylabel('Occurrencies')
+    #axs[1].set_ylabel('Number of Occurrencies')
     axs[1].legend(loc='upper right')
     axs[1].set_title('Histogram of Number of Fascicles')
 
     # Histogram of the Eccentricity
     axs[2].hist(eccentricity_pred, bins=bins_eccentricity, alpha=0.5, label='Prediction')
     axs[2].set_xlabel('Eccentricity')
-    axs[2].set_ylabel('Occurrencies')
+    #axs[2].set_ylabel('Number of Occurrencies')
     axs[2].legend(loc='upper right')
     axs[2].set_title('Histogram of Eccentricity')
 
@@ -273,7 +280,7 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
         os.makedirs(output_folder, exist_ok=True)
         out_fname = output_folder
 
-    fig, axs = plt.subplots(len(path_list), 5, figsize=(10, len(path_list) * 2))
+    fig, axs = plt.subplots(len(path_list), 3, figsize=(6, len(path_list) * 2))
 
     # fig, axs = plt.subplots(1, 4, figsize=(10, 6))
 
@@ -282,7 +289,7 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
         img = np.load(img_path)
         pred = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
         pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
-        pred_out = draw_outliers_regions(pred_post)
+        pred_post = draw_outliers_regions(pred_post)
 
         axs[k, 0].imshow(img)
 
@@ -290,20 +297,13 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
 
         axs[k, 2].imshow(pred_post, cmap='gray')
 
-        axs[k, 3].imshow(pred_out)
-
-        axs[k, 4].imshow(img)
-        axs[k, 4].imshow(pred_post, cmap='gray', alpha=0.5)
-
-        for i in range(5):
+        for i in range(3):
             axs[k, i].xaxis.set_major_locator(ticker.NullLocator())
             axs[k, i].yaxis.set_major_locator(ticker.NullLocator())
 
     axs[0, 0].set_title('Original Image')
     axs[0, 1].set_title('Prediction before\n postprocesing')
     axs[0, 2].set_title('Prediction after\n postprocessing')
-    axs[0, 2].set_title('Prediction with\n outliers displayed')
-    axs[0, 4].set_title('Prediction overlayed\n onto image')
 
 
     if save:
@@ -362,33 +362,31 @@ if __name__ == '__main__':
     model_save_file = os.path.join(os.getcwd(), model_path)
 
     ##################### Show Model Metrics ##########################################
-    # plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
-    # plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
-    # plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
+    #plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
+    #plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
+    #plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
 
     ##################### Show augmented images ##########################################
-    # sample_img_path = get_samples(train_folder, test=True)
-    # sample_img_path = sample_img_path[0]
-    # plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
+    sample_img_path = get_samples(train_folder, test=True)
+    #sample_img_path = sample_img_path[0]
+    #plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
+
+    ##################### Show mask vs prediction #######################################
+    path_list = get_samples(validation_folder, num_samples=3)
+    #plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
+    #plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+
+    ##################### Show post processed prediction #############################################
+    unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
+    #plot_postprocessed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
     ##################### Show color histogram ##########################################
     dataset_path_list = get_samples(train_folder, test=True, num_samples=-1)
-    unlabelled_path_list = get_samples(unlabelled_folder, test=True, num_samples=3)
-    plot_color_histogram(unlabelled_path_list, dataset_path_list, save=True, show=True)
-
-    ##################### Show mask vs prediction #######################################
-    # path_list = get_samples(validation_folder, num_samples=3)
-    # plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
-    # plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
-
-    ##################### Show post processed prediction #############################################
-    # unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
-    # plot_postprocessed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+    #color_histogram_list = [unlabelled_sample_list[2]]
+    color_histogram_list = unlabelled_sample_list
+    plot_color_histogram(color_histogram_list, dataset_path_list, save=True, show=True)
 
     #################### Show distributions #############################################
-    # sample_train = get_samples(train_folder, num_samples=-1)
-    # plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing = False)
-    # plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
-
-
-
+    #sample_train = get_samples(train_folder, num_samples=-1)
+    #plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing = False)
+    #plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
