@@ -14,6 +14,7 @@ debug = False
 cur_model_id = 'FL_and_BCE_Adam_default'
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'
+model_losses_path = f'model_losses/{cur_model_id}.pkl'
 minimum_fascicle_area = 101
 watershed_coeff = [0.35]
 

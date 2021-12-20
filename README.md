@@ -1,27 +1,32 @@
 # nerve-segmentation
-ML Project 2
 
 
-With vagus dataset 3: loss: 0.1200 - val_loss: 0.3506
-With vagus dataset 4: loss: 0.1790 - val_loss: 0.2088
 
 
-Epoch 20 vagus dataset 7 no transforms: loss: 0.0805 - val_loss: 0.3679
+## Setup
 
+All instructions are relative to the root directory of the repository.
 
-### TODO list
-* cross validation 
-* visualisation + prediction (should take in the same format - normalised rgb images) Ivan
-* test model on unlabelled images (from same folder as annotation and different folder as annotation)
-* more results / analysis of model (multiple predictions out of sample with distribution of IOU scores + number of regions)
-* compute minimum distance between fasicle regions 
+### Install environment
 
-### IDEAS list
-* Try dice loss for training
-* Try binary cross entropy
-* Try dice and cross-entropy loss weighted 
-* Try all weighted
-(using Dice loss to capture the small details in the image and the borders 
-and cross-entropy loss for the wider details such as the cell interiors)
-* Try Adam as an optimizer (or others, just to show that we did some experiments also on this)
-* Add the validation loss to the plots
+1. We use conda for managing our environment, install the environment with the provided `.yml` file by running
+
+``` 
+conda env create -f vagus.yml
+```
+
+Make sure conda is installed on your computer otherwise visit https://docs.anaconda.com/anaconda/install/index.html
+
+### Get Data
+
+Steps are only required if training the model
+
+1. In the `initialise_run()` in `src/config.py`, change directory to the root directory of the repository.
+2. Download data from drive and put it in: `data/original_dataset`.
+3. Run `src/data_convert.py` to convert the dataset to model ready format (only run this once).
+
+## Training
+
+1. Run `src/run.py`
+
+## Evaluation

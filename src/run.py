@@ -1,19 +1,26 @@
+import os
+
 from config import img_size, num_classes, initialise_run, cur_model_id
 from data_utils import input_target_path_pairs
 from model import get_model
-from fine_tune import fine_tune
 from train import train
 
-if __name__ == '__main__':
+
+def main(data_dir='data/original_dataset', verbose=True):
+    """
+        :param data_dir specifies dataset directory
+        :param verbose flag for printing messages
+    """
     initialise_run()
     model, decoder_layers, encoder_layers = get_model(img_size, num_classes)
-    print("Decoder Layers: " + ' '.join(str(e) for e in decoder_layers))
-    print("Encoder Layers: " + ' '.join(str(e) for e in encoder_layers))
+    if verbose:
+        print("Decoder Layers: " + ' '.join(str(e) for e in decoder_layers))
+        print("Encoder Layers: " + ' '.join(str(e) for e in encoder_layers))
     m = train(
         model=model,
         model_id=cur_model_id,
-        train_img_target_pairs=input_target_path_pairs('data/transfer_learning/train'),
-        val_img_target_pairs=input_target_path_pairs('data/transfer_learning/validation')
+        train_img_target_pairs=input_target_path_pairs(os.path.join(data_dir, 'train')),
+        val_img_target_pairs=input_target_path_pairs(os.path.join(data_dir, 'validation'))
     )
     # m = fine_tune(
     #     trained_model_path=trained_model_path,
@@ -24,5 +31,9 @@ if __name__ == '__main__':
     #     val_img_target_pairs=input_target_path_pairs('data/transfer_learning_dataset/validation')
     # )
 
-    # output_predictions(trained_model_id=cur_model_id)
-    print('Done')
+    if verbose:
+        print('Done')
+
+
+if __name__ == '__main__':
+    main()
