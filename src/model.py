@@ -3,21 +3,24 @@ U-Net model modified from https://arxiv.org/pdf/1505.04597.pdf
 Implementation: https://colab.research.google.com/github/keras-team/keras-io/blob/master/examples/vision/ipynb/oxford_pets_image_segmentation.ipynb
 """
 
-from tensorflow.keras import layers
 from tensorflow import keras
+from tensorflow.keras import layers
 
 from config import batch_size
 
 
-
-
 def get_model(img_size, num_classes):
+    """
+        Builds a U-net model
+        :param img_size: dimensions of images
+        :param num_classes: number of classes to segment into
+    """
     layer_no = 0
     decoder_layers = []
     encoder_layers = []
-    
+
     decoder_layers.append(layer_no)
-    
+
     inputs = keras.Input(shape=img_size + (3,))
     layer_no += 1
 
@@ -50,7 +53,7 @@ def get_model(img_size, num_classes):
             previous_block_activation
         )
         x = layers.add([x, residual])  # Add back residual
-        
+
         layer_no += 9
         previous_block_activation = x  # Set aside next residual
 
@@ -72,7 +75,7 @@ def get_model(img_size, num_classes):
         residual = layers.UpSampling2D(2)(previous_block_activation)
         residual = layers.Conv2D(filters, 1, padding="same")(residual)
         x = layers.add([x, residual])  # Add back residual
-        
+
         layer_no += 10
         previous_block_activation = x  # Set aside next residual
 

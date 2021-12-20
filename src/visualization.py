@@ -10,7 +10,7 @@ import cv2
 from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, focal_tversky_loss, focal_loss, custom_loss
 from eval import predict_mask, get_model_prediction
 from stats import get_samples, calculate_regions, compute_bins, get_image_histogram, get_dataset_histogram
-from augmentation import get_random_affine_transformation
+from augmentation import get_random_transformation
 from post_processing import draw_outliers_regions
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
@@ -75,11 +75,11 @@ def plot_augmented_images(img_path, num_aug=6, num_aug_wcolor=2, save=False, sho
     augmented_imgs_wcolor = []
 
     for _ in range(num_aug):
-        transform = get_random_affine_transformation()
+        transform = get_random_transformation()
         augmented_imgs.append(transform(img, do_colour_transform=False))
     
     for _ in range(num_aug_wcolor):
-        transform = get_random_affine_transformation()
+        transform = get_random_transformation()
         augmented_imgs_wcolor.append(transform(img))
 
     # augmented_imgs = np.array(augmented_imgs)

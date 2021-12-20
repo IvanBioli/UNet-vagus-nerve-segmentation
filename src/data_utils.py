@@ -1,9 +1,18 @@
 import os
-
-import numpy as np
 import random
 
+import numpy as np
+
+
 def get_samples(data_folder, test=False, num_samples=1, shuffle=True):
+    """
+        Gets random samples of images
+        :param data_folder - dataset directory
+        :param test - Flag to return masks or not
+        :param num_samples - Number of samples to return
+        :param shuffle - Shuffles dataset samples
+    """
+
     img_folder = data_folder + '/images'
     img_paths = [img_folder + '/' + img_file for img_file in os.listdir(img_folder)]
     if not test:
@@ -21,13 +30,21 @@ def get_samples(data_folder, test=False, num_samples=1, shuffle=True):
         num_samples = len(paths)
     return paths[:num_samples]
 
+
 def is_annotation(annotation):
-    """ Returns true if the image provided is an annotation in the correct format. """
+    """
+        Returns true if the image provided is an annotation in the correct format.
+        :param annotation - annotation image
+    """
     return (np.unique(annotation) == np.array([0, 1])).all() and annotation.dtype == np.dtype('uint8')
 
 
-def input_target_path_pairs(directory, print_examples=48):
-    """ Create image target pairs to feed into data loaders. """
+def input_target_path_pairs(directory, print_examples=False):
+    """
+        Create image target pairs to feed into data loaders.
+        :param directory - dataset directory
+        :param print_examples - Flag to print / number of examples to print
+    """
     input_dir = os.path.join(os.getcwd(), directory, 'images')
     target_dir = os.path.join(os.getcwd(), directory, 'annotations')
 

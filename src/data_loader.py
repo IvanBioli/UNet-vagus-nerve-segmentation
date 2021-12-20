@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing.image import load_img
 # from src.config import debug
 # from src.augmentation import get_random_affine_transformation
 from config import debug
-from augmentation import get_random_affine_transformation
+from augmentation import get_random_transformation
 
 import matplotlib.pyplot as plt
 
@@ -37,7 +37,7 @@ class VagusDataLoader(keras.utils.Sequence):
             img = np.load(img_path)
             annotation = np.load(target_path)
             annotation = np.expand_dims(annotation, axis=2)
-            current_transform = get_random_affine_transformation()
+            current_transform = get_random_transformation()
             augmented_img = current_transform(img, do_colour_transform=False)
             augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=False)
             augmented_annotation = cv2.threshold(augmented_annotation, 0.5, 1, cv2.THRESH_BINARY)[1]
