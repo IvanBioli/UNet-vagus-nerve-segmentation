@@ -11,8 +11,17 @@ from config import num_classes, batch_size
 def get_model_prediction(trained_model, img):
     """
         Predict the mask of an imput image
-        :param trained_model - the trained model
-        :param img - the input image to predict the mask
+
+        Parametes
+        ---------------
+        trained_model: tf.keras.Model
+            the trained model
+        img: np.ndarray
+            the input image to predict the mask
+
+        Returns
+        ---------------
+        the predicted mask for the input image as a 1-channel numpy image
     """
     prediction = trained_model.predict(img)
     prediction = np.argmax(prediction, axis=-1)
@@ -21,8 +30,17 @@ def get_model_prediction(trained_model, img):
 def delete_small_regions(mask, threshold=101):
     """
         Remove regions from a mask which have area smaller than a threshold
-        :param mask - the input mask
-        :param threshold - the area (number of pixels) threshold
+
+        Parameters
+        ---------------
+        mask: np.ndarray
+            the input mask
+        threshold: int, optional
+            the area (number of pixels) threshold
+
+        Returns
+        ---------------
+        the mask after removing small regions
     """
     regions_mask = regionprops(label((mask * 255).astype(int)))
     regions_to_delete = [x for x in regions_mask if x.area < threshold]
@@ -33,9 +51,18 @@ def delete_small_regions(mask, threshold=101):
 
 def apply_watershed(mask, coeff_list=[0.35]):
     """
-        Apply the watershed algorithm to a mask 
-        :param mask - the input mask
-        :param coeff_list - TODO
+        Apply the watershed algorithm to a mask
+
+        Parameters
+        ---------------
+        mask: np.ndarray
+            the input mask
+        coeff_list: [float], optional
+            TODO
+
+        Returns
+        ---------------
+        TODO
     """
     thresh = (mask * 255).astype('uint8')
     img = cv2.merge((thresh,thresh,thresh))
@@ -81,11 +108,18 @@ def apply_watershed(mask, coeff_list=[0.35]):
 def predict_mask(trained_model, img, threshold = 0, coeff_list = None):
     """
         Predict the mask of an image and then apply pre-processing steps to the mask
-        Pre-processing steps include: remove small regions and apply watershed 
-        :param trained_model - the trained model
-        :param img - the input image to predict the mask
-        :param threshold - threshold to apply delete_small_regions
-        :param coeff_list - coefficients for apply_watershed
+        Pre-processing steps include: remove small regions and apply watershed
+
+        Parameters
+        ---------------
+        trained_model: tf.keras.Model
+            the trained model
+        img: np.ndarray
+            the input image to predict the mask
+        threshold: int, optional
+            threshold to apply delete_small_regions
+        coeff_list: [float], optional
+            coefficients for apply_watershed
     """
     prediction = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
     prediction = delete_small_regions(prediction, threshold)

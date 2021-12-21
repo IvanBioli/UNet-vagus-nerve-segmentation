@@ -12,12 +12,24 @@ from config import batch_size
 def get_model(img_size, num_classes):
     """
         Builds a U-net model
-        :param img_size: dimensions of images
-        :param num_classes: number of classes to segment into
+
+        Parameters
+        ---------------
+        img_size: (int, int) 
+            dimensions of images
+        num_classes: int 
+            number of classes to segment into
+
+        Returns
+        ---------------
+        the U-net model
     """
-    layer_no = 0
+
+    # store the decoder and encoder layers
     decoder_layers = []
     encoder_layers = []
+    # the current layer to be stored
+    layer_no = 0
 
     decoder_layers.append(layer_no)
 

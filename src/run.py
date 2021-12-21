@@ -8,8 +8,12 @@ from train import train
 
 def main(data_dir='data/original_dataset', verbose=True):
     """
-        :param data_dir specifies dataset directory
-        :param verbose flag for printing messages
+        Parameters
+        ---------------
+        data_dir: str, optional
+            specifies dataset directory
+        verbose: bool, optional
+            flag for printing messages
     """
     initialise_run()
     model, decoder_layers, encoder_layers = get_model(img_size, num_classes)

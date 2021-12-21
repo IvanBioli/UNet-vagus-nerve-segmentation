@@ -11,10 +11,21 @@ from loss import iou_score, dice_loss, tversky_loss, focal_tversky_loss, custom_
 def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
     """
         Trains an iteration of the model
-        :param model - keras model to be trained
-        :param model_id - unique identifier for current training run
-        :param train_img_target_pairs - train img mask pairs
-        :param val_img_target_pairs - validation img mask pairs
+
+        Parameters
+        ---------------        
+        model: tf.keras.Model
+            keras model to be trained
+        model_id: str
+            unique identifier for current training run
+        train_img_target_pairs: ([str], [str])
+            train img mask pairs
+        val_img_target_pairs: ([str], [str])
+            validation img mask pairs
+
+        Returns
+        ----------------
+        the trained model
     """
     _optimizer = keras.optimizers.Adam()
     _loss = custom_loss  # change loss functions here

@@ -21,10 +21,17 @@ custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_lo
 def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
     """
         Plot the color histogram of images agains that of the whole dataset
-        :param path_list - paths to the input images
-        :param dataset_path_list - path to training dataset folder
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
+
+        Parameters
+        ---------------
+        path_list: [str]
+            paths to the input images
+        dataset_path_list: [str]
+            path to training dataset folder
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
     """
     if save:
         output_folder = os.path.join(os.getcwd(), 'results/visualisations/distributions')
@@ -37,6 +44,7 @@ def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
 
     fig, axs = plt.subplots(len(path_list) + 1, 4, figsize=(10, (len(path_list)+1) * 2))
 
+    # color histogram of original dataset
     axs[0, 0].text(0.5, 0.5, 'Average on\ntraining set', horizontalalignment='center', verticalalignment='center', transform=axs[0, 0].transAxes)
     axs[0, 0].axis('off')
     for i, col in enumerate(color):
@@ -55,6 +63,7 @@ def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
             axs[k, i+1].plot(xticks, img_hist[i], color=col)
         axs[k, 1].set_ylabel('% of pixels')
 
+    # histogram of rgb channel
     axs[0, 1].set_title('Histogram of\nR channel')
     axs[0, 2].set_title('Histogram of\nG channel')
     axs[0, 3].set_title('Histogram of\nB channel')
@@ -71,11 +80,19 @@ def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
 def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, show=True):
     """
         Visualize the different augmentations from a given image
-        :param img_path - path to the input image
-        :param num_aug - number of augmentations to be displayed
-        :param num_aug_wcolor - number of augmentations with color transformation to be displayed
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
+
+        Parameters
+        ---------------
+        img_path: str
+            path to the input image
+        num_aug: int, optional
+            number of augmentations to be displayed
+        num_aug_wcolor: int, optional
+            number of augmentations with color transformation to be displayed
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
     """
     img = np.load(img_path)
 
@@ -84,6 +101,7 @@ def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, sho
         os.makedirs(output_folder, exist_ok=True)
         out_fname = output_folder
 
+    # augmented images
     augmented_imgs = []
     augmented_imgs_wcolor = []
 
@@ -95,12 +113,12 @@ def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, sho
         transform = get_random_transformation()
         augmented_imgs_wcolor.append(transform(img))
 
-    # augmented_imgs = np.array(augmented_imgs)
-    # augmented_imgs_wcolor = np.array(augmented_imgs_wcolor)
-
+    # reshape np array to fit in the plot
     augmented_imgs= np.reshape(augmented_imgs, (2, num_aug // 2, 512, 512, 3))
     augmented_imgs_wcolor = np.reshape(augmented_imgs_wcolor, (2, num_aug_wcolor // 2, 512, 512, 3))
     
+    # plot layouts
+    # the last columns always belongs to colored transformations
     num_col = (num_aug + num_aug_wcolor) // 2 + 2
     fig, axs = plt.subplots(2, num_col, figsize=(num_col * 3, 6))
 
@@ -114,10 +132,12 @@ def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, sho
     original_ax.imshow(img)
 
     for x in range(2):
+        # normal augmentation
         for y in range(2, num_aug // 2 + 2):
             axs[x][y].imshow(augmented_imgs[x][y - 2])
             axs[x][y].axis('off')
 
+        # colored augmentation
         for y_wcolor in range(-num_aug_wcolor // 2, 0):
             axs[x][y_wcolor].imshow(augmented_imgs_wcolor[x][y_wcolor + num_aug_wcolor // 2])
             axs[x][y_wcolor].axis('off')
@@ -133,11 +153,19 @@ def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, sho
 def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=False, save=False, show=True):
     """
         Visualize the original images, the annotated masks, and the predicted masks
-        :param path_list - paths to the input images
-        :param trained_model_checkpoint - trained model to load and make prediction
-        :param wstats - flag to display the metrics stats within the plot
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
+
+        Parameters
+        ---------------
+        path_list: [str]
+            paths to the input images
+        trained_model_checkpoint: str
+            trained model to load and make prediction
+        wstats: bool, optional
+            flag to display the metrics stats within the plot
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
     """
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
@@ -160,10 +188,16 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
 
         pred = predict_mask(trained_model, img)
 
+        # original image
         axs[k, 0].imshow(img)
+
+        # annotated mask
         axs[k, 1].imshow(mask, cmap='gray', interpolation='none')
+
+        # predicted mask
         axs[k, 2].imshow(pred, cmap='gray', interpolation='none')
 
+        # predicted overlayed on annotated mask
         axs[k, 3].imshow(mask, cmap='gray', interpolation='none')
         axs[k, 3].imshow(pred, cmap='viridis', alpha=0.5, interpolation='none')
 
@@ -189,10 +223,17 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
 def plot_image_vs_predictions(path_list, trained_model_checkpoint=None, save=False, show=True):
     """
         Visualize the original images, the predicted masks and the predicted masks overlayed onto the original image
-        :param path_list - paths to the input images
-        :param trained_model_checkpoint - trained model to load and make prediction
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
+
+        Parameters
+        ---------------
+        path_list: [str]
+            paths to the input images
+        trained_model_checkpoint: str
+            trained model to load and make prediction
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
     """
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
@@ -211,9 +252,13 @@ def plot_image_vs_predictions(path_list, trained_model_checkpoint=None, save=Fal
 
         pred = predict_mask(trained_model, img)
 
+        # original image
         axs[k, 0].imshow(img)
+
+        # prediction
         axs[k, 1].imshow(pred, cmap='gray', interpolation='none')
 
+        # orediction overlayed on image
         axs[k, 2].imshow(img)
         axs[k, 2].imshow(pred, cmap='gray', alpha=0.5, interpolation='none')
         for i in range(3):
@@ -235,12 +280,21 @@ def plot_fascicles_distribution(path_list, test=False, trained_model_checkpoint=
     """
         Plot the the distribution of the stats of the train dataset
         Stats including: fascicles' area, number of fascicle, fascicles' eccentricity
-        :param path_list - paths to the input images
-        :param test - flag to plot the distribution of the annotated masks or not
-        :param trained_model_checkpoint - trained model to load and make prediction
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
-        :param postprocessing - flag to postprocess the prediction or not
+
+        Parameters
+        ---------------
+        path_list: [str]
+            paths to the input images
+        test: bool, optional
+            flag to plot the distribution of the annotated masks or not
+        trained_model_checkpoint: str
+            trained model to load and make prediction
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
+        postprocessing: bool, optional
+            flag to postprocess the prediction or not
     """
 
     if trained_model_checkpoint is not None:
@@ -381,10 +435,17 @@ def plot_fascicles_distribution(path_list, test=False, trained_model_checkpoint=
 def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, show=True):
     """
         Visualized the prediction before and after postprocessing
-        :param path_list - paths to the input images
-        :param trained_model_checkpoint - trained model to load and make prediction
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
+
+        Parameters
+        ---------------
+        path_list: [str]
+            paths to the input images
+        trained_model_checkpoint: str
+            trained model to load and make prediction
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
     """
     
     if trained_model_checkpoint is not None:
@@ -397,8 +458,6 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
 
     fig, axs = plt.subplots(len(path_list), 3, figsize=(6, len(path_list) * 2))
 
-    # fig, axs = plt.subplots(1, 4, figsize=(10, 6))
-
     for k, img_path in enumerate(path_list):
         print(img_path)
         img = np.load(img_path)
@@ -406,10 +465,13 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
         pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
         pred_post = draw_outliers_regions(pred_post, area_threshold=3101, eccen_threshold=[0, 0.95])
 
+        # original image
         axs[k, 0].imshow(img)
 
+        # prediction
         axs[k, 1].imshow(pred, cmap='gray')
 
+        # prediction afeter processing
         axs[k, 2].imshow(pred_post, cmap='gray')
 
         for i in range(3):
@@ -434,6 +496,17 @@ def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=Tr
         :param model_name - the name of the trained model
         :param save - flag for saving the plot
         :param show - flag for showing the plot
+
+        Parameters
+        ---------------
+        loss_filepath: str
+            path to the saved losses and metrics recorded from the training
+        model_name: str
+            the name of the trained model
+        save: bool, optional
+            flag for saving the plot
+        show: bool, optional
+            flag for showing the plot
     """
 
     if save:

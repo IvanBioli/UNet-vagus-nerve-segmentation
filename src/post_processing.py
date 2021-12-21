@@ -2,13 +2,23 @@ import numpy as np
 from skimage.measure import label, regionprops
 from stats import calculate_regions
 
-def get_outlier_regions(regions, area_threshold=3101, eccen_threshold=[0.33, 0.95]):
+def get_outlier_regions(regions, area_threshold=3101, eccen_threshold=(0.33, 0.95)):
     """
         Get regions of a prediction whose areas and eccentricities fall outside of the 99-th quantile
         of the distribution from the training dataset
-        :param regions - the list of regions from a mask
-        :param area_threshold - the upper threshold corresponding to the 99th quantile of the area distribution
-        :param eccen_threshold - the thresholds corresponding to the 1st and 99th quantile of the eccentricity distribution
+
+        Parameters
+        ---------------
+        regions:
+            the list of regions from a mask
+        area_threshold: int, optional
+            the upper threshold corresponding to the 99th quantile of the area distribution
+        eccen_threshold: (float, float), optional
+            the thresholds corresponding to the 1st and 99th quantile of the eccentricity distribution
+
+        Returns
+        ---------------
+        the outliers regions int the mask
     """
 
     outliers = []
@@ -20,9 +30,19 @@ def get_outlier_regions(regions, area_threshold=3101, eccen_threshold=[0.33, 0.9
 def draw_outliers_regions(mask, area_threshold=3101, eccen_threshold=[0, 0.95]):
     """
         Change the color of outliers regions into red
-        :param mask - the input mask
-        :param area_threshold - the upper threshold corresponding to the 99th quantile of the area distribution
-        :param eccen_threshold - the thresholds corresponding to the 1st and 99th quantile of the eccentricity distribution
+
+        Parameters
+        ---------------
+        mask:   np.ndarray
+            the input mask
+        area_threshold: int, optional
+            the upper threshold corresponding to the 99th quantile of the area distribution
+        eccen_threshold: (float, float), optional
+            the thresholds corresponding to the 1st and 99th quantile of the eccentricity distribution
+
+        Returns
+        ----------------
+        the recolored mask
     """
     modified = np.dstack(([mask, mask, mask]))
     regions = calculate_regions(mask)[0]

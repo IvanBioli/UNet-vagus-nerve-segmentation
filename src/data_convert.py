@@ -10,13 +10,20 @@ from src.config import img_size, initialise_run
 def convert_dataset(input_directory, output_size=(160, 160), verbose=False, unlabelled_dir=False):
     """
         Converts images and masks to numpy arrays
+
         Masks from pdf -> npy with 1 channel
         Images from tif -> npy with 3 channels
 
-        :param input_directory string folder path of input
-        :param output_size file size of final output images
-        :param verbose flag for printing in function
-        :param unlabelled_dir flag for whether directory contains both images and masks or just images
+        Parameters
+        ---------------
+        input_directory: str
+            string folder path of input
+        output_size: tuple (int, int), optional
+            file size of final output images
+        verbose flag: bool, optional
+            for printing in function
+        unlabelled_dir: bool,, optional
+            flag for whether directory contains both images and masks or just images
     """
 
     if unlabelled_dir:

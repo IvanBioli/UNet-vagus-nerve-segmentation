@@ -10,12 +10,25 @@ from loss import nerve_segmentation_loss, dice_loss, tversky_loss
 def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers, train_img_target_pairs, val_img_target_pairs):
     """
         Fine-tunes a model for transfer learning tasks
-        :param trained_model_path - path to pre-trained model
-        :param model_id - unique identifier for current training run
-        :param num_blocks_fine_tune - number of blocks in encoder layers to fine-tune the weights
-        :param encoder_layers - starting layers of the encoder in the network
-        :param train_img_target_pairs - train img mask pairs
-        :param val_img_target_pairs - validation img mask pairs
+
+        Parameters
+        ---------------        
+        trained_model_path: str
+            path to pre-trained model
+        model_id: str
+            unique identifier for current training run
+        num_blocks_fine_tune: int
+            number of blocks in encoder layers to fine-tune the weights
+        encoder_layers: [int]
+            starting layers of the encoder in the network
+        train_img_target_pairs: ([str], [str])
+            train img mask pairs
+        val_img_target_pairs: ([str], [str])
+            validation img mask pairs
+
+        Returns
+        ----------------
+        the fine-tuned model
     """
 
     trained_model = keras.models.load_model(trained_model_path, custom_objects={
