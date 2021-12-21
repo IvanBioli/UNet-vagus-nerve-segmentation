@@ -14,10 +14,10 @@ def get_samples(data_folder, test=False, num_samples=1, shuffle=True):
     """
 
     img_folder = data_folder + '/images'
-    img_paths = [img_folder + '/' + img_file for img_file in os.listdir(img_folder)]
+    img_paths = [img_folder + '/' + img_file for img_file in os.listdir(img_folder) if img_file.endswith('.npy')]
     if not test:
         mask_folder = data_folder + '/annotations'
-        mask_paths = [mask_folder + '/' + mask_file for mask_file in os.listdir(mask_folder)]
+        mask_paths = [mask_folder + '/' + img_file for img_file in os.listdir(img_folder) if img_file.endswith('.npy')]
 
         paths = list(zip(img_paths, mask_paths))
     else:

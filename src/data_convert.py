@@ -20,7 +20,7 @@ def convert_dataset(input_directory, output_size=(160, 160), verbose=False, unla
     """
 
     if unlabelled_dir:
-        directories = [('image', input_directory)]
+        directories = [('image', os.path.join(input_directory, 'images'))]
     else:
         directories = [
             ('mask', os.path.join(input_directory, 'annotations')),
@@ -43,32 +43,31 @@ def convert_dataset(input_directory, output_size=(160, 160), verbose=False, unla
                     image = cv2.resize(image, output_size)  # resize mask before thresholding
                     (_, image) = cv2.threshold(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 127, 255, cv2.THRESH_BINARY)
                     assert ((np.unique(image) == [0, 255]).all())
-                else:
-                    raise ValueError(f'Invalid mask file type: {file_name}')
+                    # rescale masks to be between [0, 1]
+                    # masks should be 0 or 1 because there are 2 classes for this dataset
+                    image = image / 255
+                    # change the background to black and the foreground to white
+                    image = 1 - image
+                    assert ((np.unique(image) == [0, 1]).all())
+                    np.save(out_fpath, image)
+                    os.remove(fpath)
             elif img_type == 'image':
                 if verbose:
                     print('Converting image: ', idx + 1)
-                if file_name.endswith('.pdf'):
-                    pages = convert_from_path(fpath)
-                    assert len(pages) == 1
-                    image = pages[0]
-                    image = np.array(image)
-                elif file_name.endswith('tif'):
-                    image = cv2.imread(fpath)
-                else:
-                    raise ValueError(f'Invalid image file type: {file_name}')
-                image = cv2.resize(image, output_size)  # resize image
+                if file_name.endswith('.pdf') or file_name.endswith('.tif'):
+                    if file_name.endswith('.pdf'):
+                        pages = convert_from_path(fpath)
+                        assert len(pages) == 1
+                        image = pages[0]
+                        image = np.array(image)
+                    elif file_name.endswith('tif'):
+                        image = cv2.imread(fpath)
+                    image = cv2.resize(image, output_size)  # resize image
+                    image = image/255
+                    np.save(out_fpath, image)
+                    os.remove(fpath)
             else:
                 raise ValueError(f'Unknown image type: {img_type}')
-
-            # rescale all images and masks to be between [0, 1]
-            # masks should be 0 or 1 because there are 2 classes for this dataset
-            image = image / 255
-            if img_type == 'mask':
-                assert ((np.unique(image) == [0, 1]).all())
-
-            np.save(out_fpath, image)
-            os.remove(fpath)
 
 
 def run_dataset_convert():

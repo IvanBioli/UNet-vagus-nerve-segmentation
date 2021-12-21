@@ -17,7 +17,7 @@ def get_outlier_regions(regions, area_threshold=3101, eccen_threshold=[0.33, 0.9
             outliers.append(r)
     return outliers
 
-def draw_outliers_regions(mask, area_threshold=3101, eccen_threshold=[0.33, 0.95]):
+def draw_outliers_regions(mask, area_threshold=3101, eccen_threshold=[0, 0.95]):
     """
         Change the color of outliers regions into red
         :param mask - the input mask

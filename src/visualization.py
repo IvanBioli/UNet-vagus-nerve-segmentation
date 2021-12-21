@@ -147,7 +147,7 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
     else:
         sub_folder = 'default'
 
-    fig, axs = plt.subplots(len(path_list), 4, figsize=(4 * 2, len(path_list) * 2))
+    fig, axs = plt.subplots(len(path_list), 4, figsize=(7, len(path_list) * 2))
 
     if save:
         output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/', sub_folder)
@@ -178,6 +178,51 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
     axs[0, 1].set_title('Ground truth')
     axs[0, 2].set_title('Prediction')
     axs[0, 3].set_title('Prediction overlayed\n on ground truth')
+
+    plt.tight_layout()
+
+    if save:
+        plt.savefig(out_fname + '/sample_predictions_' + sub_folder + '.png')
+    if show:
+        plt.show()
+
+def plot_image_vs_predictions(path_list, trained_model_checkpoint=None, save=False, show=True):
+    """
+        Visualize the original images, the predicted masks and the predicted masks overlayed onto the original image
+        :param path_list - paths to the input images
+        :param trained_model_checkpoint - trained model to load and make prediction
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+    """
+    if trained_model_checkpoint is not None:
+        trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
+
+    sub_folder = 'unlabelled'
+
+    fig, axs = plt.subplots(len(path_list), 3, figsize=(6, len(path_list) * 2))
+
+    if save:
+        output_folder = os.path.join(os.getcwd(), 'results/visualisations/predictions/', sub_folder)
+        os.makedirs(output_folder, exist_ok=True)
+        out_fname = output_folder
+
+    for k, path in enumerate(path_list):
+        img = np.load(path)
+
+        pred = predict_mask(trained_model, img)
+
+        axs[k, 0].imshow(img)
+        axs[k, 1].imshow(pred, cmap='gray', interpolation='none')
+
+        axs[k, 2].imshow(img)
+        axs[k, 2].imshow(pred, cmap='gray', alpha=0.5, interpolation='none')
+        for i in range(3):
+            axs[k, i].xaxis.set_major_locator(ticker.NullLocator())
+            axs[k, i].yaxis.set_major_locator(ticker.NullLocator())
+
+    axs[0, 0].set_title('Input image')
+    axs[0, 1].set_title('Prediction')
+    axs[0, 2].set_title('Prediction overlayed\n on input image')
 
     plt.tight_layout()
 
@@ -217,6 +262,9 @@ def plot_fascicles_distribution(path_list, test=False, trained_model_checkpoint=
     areas_pred = []
     num_fascicles_pred = []
     eccentricity_pred = []
+    areas_post = []
+    num_fascicles_post = []
+    eccentricity_post = []
 
     for p in path_list:
         if not test:
@@ -227,15 +275,9 @@ def plot_fascicles_distribution(path_list, test=False, trained_model_checkpoint=
             mask = None
 
         img = np.load(img_path)
-        if postprocessing:
-            pred = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
-        else:
-            pred = predict_mask(trained_model, img)
 
+        pred = predict_mask(trained_model, img)
         regions_pred, regions_mask = calculate_regions(pred, mask)
-        
-        pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area)
-        regions_post, _ = calculate_regions(pred_post)
             
         if not test:
             areas_mask = areas_mask + [m.area for m in regions_mask]
@@ -245,46 +287,81 @@ def plot_fascicles_distribution(path_list, test=False, trained_model_checkpoint=
         eccentricity_pred = eccentricity_pred + [p.eccentricity for p in regions_pred]
         num_fascicles_pred.append(len(regions_pred))
 
+        if postprocessing:
+            pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
+            regions_post, _ = calculate_regions(pred_post)
+            areas_post = areas_post + [p.area for p in regions_post]
+            eccentricity_post = eccentricity_post + [p.eccentricity for p in regions_post]
+            num_fascicles_post.append(len(regions_post))
 
-    fig, axs = plt.subplots(1, 3, figsize=(10, 6))
+    if not postprocessing:
+        fig, axs = plt.subplots(1, 3, figsize=(10, 7))
+    if postprocessing:
+        fig, axs = plt.subplots(1, 6, figsize=(20, 7))
 
     nbins_area = 30
     nbins_fascicles = 10
     nbins_eccentricity = 30
     if not test:
-        # Computing the bins for the areas' histogram and plotting the histogram
-        bins_areas = compute_bins(nbins_area, areas_pred, areas_mask)
-        axs[0].hist(areas_mask, bins=bins_areas, alpha=0.5, label='Ground truth')
-        # Computing the bins for the fascicles' histogram and plotting the histogram
-        bins_fascicles = compute_bins(nbins_fascicles, num_fascicles_pred, num_fascicles_mask)
-        axs[1].hist(num_fascicles_mask, bins=bins_fascicles, alpha=0.5, label='Ground truth')
-        bins_eccentricity = compute_bins(nbins_eccentricity, eccentricity_pred, eccentricity_mask)
-        axs[2].hist(eccentricity_mask, bins=bins_eccentricity, alpha=0.5, label='Ground truth')
+        range_plots = [0, 3] if postprocessing else [0]
+        for i in range_plots:
+            # Computing the bins for the areas' histogram and plotting the histogram
+            bins_areas = compute_bins(nbins_area, areas_pred + areas_post, areas_mask)
+            axs[0 + i].hist(areas_mask, bins=bins_areas, alpha=0.5, label='Ground truth')
+            # Computing the bins for the fascicles' histogram and plotting the histogram
+            bins_fascicles = compute_bins(nbins_fascicles, num_fascicles_pred + num_fascicles_post, num_fascicles_mask)
+            axs[1 + i].hist(num_fascicles_mask, bins=bins_fascicles, alpha=0.5, label='Ground truth')
+            bins_eccentricity = compute_bins(nbins_eccentricity, eccentricity_pred + eccentricity_post, eccentricity_mask)
+            axs[2 + i].hist(eccentricity_mask, bins=bins_eccentricity, alpha=0.5, label='Ground truth')
     else:
-        bins_areas = compute_bins(nbins_area, areas_pred)
-        bins_fascicles = compute_bins(nbins_fascicles, num_fascicles_pred)
-        bins_eccentricity = compute_bins(nbins_eccentricity, eccentricity_pred)
+        bins_areas = compute_bins(nbins_area, areas_pred + areas_post)
+        bins_fascicles = compute_bins(nbins_fascicles, num_fascicles_pred + num_fascicles_post)
+        bins_eccentricity = compute_bins(nbins_eccentricity, eccentricity_pred + eccentricity_post)
 
     # Histogram of Fascicles Areas for the predictions
     axs[0].hist(areas_pred, bins=bins_areas, alpha=0.5, label='Prediction')
     axs[0].set_xlabel('Areas (pixels)')
     axs[0].set_ylabel('Number of Occurrencies')
     axs[0].legend(loc='upper right')
-    axs[0].set_title('Histogram of Fascicles Areas')
+    axs[0].set_title('Histogram of \nFascicles Areas')
 
     # Histogram of Number of fascicles Areas for the predictions
     axs[1].hist(num_fascicles_pred, bins=bins_fascicles, alpha=0.5, label='Prediction')
     axs[1].set_xlabel('Number of Fascicles')
-    #axs[1].set_ylabel('Number of Occurrencies')
     axs[1].legend(loc='upper right')
-    axs[1].set_title('Histogram of Number of Fascicles')
+    axs[1].set_title('Histogram of \nNumber of Fascicles')
 
     # Histogram of the Eccentricity
     axs[2].hist(eccentricity_pred, bins=bins_eccentricity, alpha=0.5, label='Prediction')
     axs[2].set_xlabel('Eccentricity')
-    #axs[2].set_ylabel('Number of Occurrencies')
     axs[2].legend(loc='upper right')
-    axs[2].set_title('Histogram of Eccentricity')
+    axs[2].set_title('Histogram of \nEccentricity')
+
+    plt.text(.3, .95, 'Before post-processing', fontsize = 'xx-large', transform=fig.transFigure, horizontalalignment='center')
+    if postprocessing:
+        # Histogram of Fascicles Areas for the predictions with postprocessing
+        axs[3].hist(areas_post, bins=bins_areas, alpha=0.5, label='Prediction')
+        axs[3].set_xlabel('Areas (pixels)')
+        axs[3].legend(loc='upper right')
+        axs[3].set_title('Histogram of \nFascicles Areas')
+
+        # Histogram of Number of fascicles Areas for the predictions with postprocessing
+        axs[4].hist(num_fascicles_post, bins=bins_fascicles, alpha=0.5, label='Prediction')
+        axs[4].set_xlabel('Number of Fascicles')
+        axs[4].legend(loc='upper right')
+        axs[4].set_title('Histogram of \nNumber of Fascicles')
+
+        # Histogram of the Eccentricity for the predictions with postprocessing
+        axs[5].hist(eccentricity_post, bins=bins_eccentricity, alpha=0.5, label='Prediction')
+        axs[5].set_xlabel('Eccentricity')
+        axs[5].legend(loc='upper right')
+        axs[5].set_title('Histogram of \nEccentricity')
+
+        # To have the same scale on the y axis
+        for i in range(3):
+            axs[i + 3].set_ylim(axs[i].get_ylim())
+
+        plt.text(.7, .95, 'After post-processing', fontsize = 'xx-large', transform=fig.transFigure, horizontalalignment='center')
 
     # Print the quantiles of the areas and the eccentricity for the masks:
     if not test:
@@ -327,7 +404,7 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
         img = np.load(img_path)
         pred = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
         pred_post = predict_mask(trained_model, img, threshold=minimum_fascicle_area, coeff_list=watershed_coeff)
-        pred_post = draw_outliers_regions(pred_post)
+        pred_post = draw_outliers_regions(pred_post, area_threshold=3101, eccen_threshold=[0, 0.95])
 
         axs[k, 0].imshow(img)
 
@@ -376,14 +453,14 @@ def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=Tr
     axs[0].set_xlabel("Epochs")
     axs[0].set_ylim([0,1])
     print('\nIoU:\ntraining = ', model_details['iou_score'][best], '\nvalidation = ', model_details['val_iou_score'][best])
-    # SparseCategoricalAccuracy
-    axs[1].plot(model_details['sparse_categorical_accuracy'], label = 'Training set')
-    axs[1].plot(model_details['val_sparse_categorical_accuracy'], label = 'Validation set')
-    axs[1].set_ylabel("CA")
+    # DiceLoss
+    axs[1].plot(model_details['dice_loss'], label = 'Training set')
+    axs[1].plot(model_details['val_dice_loss'], label = 'Validation set')
+    axs[1].set_ylabel("DL")
     axs[1].set_xlabel("Epochs")
     axs[1].set_ylim(top = 1)
     axs[1].legend(loc = 'lower right')
-    print('\nCategorical Accuracy:\ntraining = ', model_details['sparse_categorical_accuracy'][best], '\nvalidation = ', model_details['val_sparse_categorical_accuracy'][best])
+    print('\nDiceLoss:\ntraining = ', model_details['dice_loss'][best], '\nvalidation = ', model_details['val_dice_loss'][best])
     # SparseCategoricalCrossentropy
     print('\nBCE:\ntraining = ', model_details['sparse_categorical_crossentropy'][best], '\nvalidation = ',
           model_details['val_sparse_categorical_crossentropy'][best])
@@ -399,39 +476,47 @@ def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=Tr
 
 if __name__ == '__main__':
     initialise_run()
-    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/train')
-    validation_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/validation')
-    unlabelled_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/unlabelled')
-    transfer_folder = os.path.join(os.getcwd(), 'data/transfer_learning/train')
+
+    train_folder = os.path.join(os.getcwd(), 'data/original_dataset/train')
+    validation_folder = os.path.join(os.getcwd(), 'data/original_dataset/validation')
+    unlabelled_folder = os.path.join(os.getcwd(), 'data/original_dataset/unlabelled')
 
     model_save_file = os.path.join(os.getcwd(), model_path)
-
+    
     ##################### Show Model Metrics ##########################################
-    #plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
-    #plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
-    #plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
+    print('\n------------------------------ Training with BCE loss ------------------------------')
+    plot_model_losses_and_metrics('model_losses/BCE_Adam_default.pkl', 'BCE', save=True, show=True)
+    print('\n--------------------------------- Training with Fl ---------------------------------')
+    plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
+    print('\n------------------------------- Training with BCE+FL -------------------------------')
+    plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
 
-    ##################### Show augmented images ##########################################
+    ##################### Show augmented images ###################################################
     sample_img_path = get_samples(train_folder, test=True)
-    #sample_img_path = sample_img_path[0]
-    #plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
+    sample_img_path = sample_img_path[0]
+    plot_augmented_images(sample_img_path, num_aug=0, num_aug_wcolor=6, save=True, show=True)
 
-    ##################### Show mask vs prediction #######################################
+    ##################### Show mask vs prediction ##################################################
+    ##### From validation set #####
     path_list = get_samples(validation_folder, num_samples=3)
-    #plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
-    #plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+    plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
+    ##### From unlabelled set #####
+    unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=15)
+    # Picking images to show different behaviours
+    unlabelled_sample_list = [unlabelled_sample_list[1], unlabelled_sample_list[11], unlabelled_sample_list[2]]
+    plot_image_vs_predictions(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
+
+    ##################### Show color histogram ######################################################
+    training_path_list = get_samples(train_folder, test=True, num_samples=-1)
+    color_histogram_list = unlabelled_sample_list
+    plot_color_histogram(color_histogram_list, training_path_list, save=True, show=True)
+    
+    ##################### Show histograms before and after postprocessing ############################
+    training_path_list = get_samples(train_folder, test=False, num_samples=-1)
+    plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=False)
+    plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
 
     ##################### Show post processed prediction #############################################
-    unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
-    #plot_postprocessed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
-
-    ##################### Show color histogram ##########################################
-    dataset_path_list = get_samples(train_folder, test=True, num_samples=-1)
-    #color_histogram_list = [unlabelled_sample_list[2]]
-    color_histogram_list = unlabelled_sample_list
-    plot_color_histogram(color_histogram_list, dataset_path_list, save=True, show=True)
-
-    #################### Show distributions #############################################
-    #sample_train = get_samples(train_folder, num_samples=-1)
-    #plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing = False)
-    #plot_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
+    # Picking images to show different behaviours
+    unlabelled_sample_list = [unlabelled_sample_list[0], unlabelled_sample_list[1]]
+    plot_postprocessed(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
