@@ -492,10 +492,6 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
 def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=True):
     """
         Plot the losses and metrics during training the model
-        :param loss_filepath - path to the saved losses and metrics recorded from the training
-        :param model_name - the name of the trained model
-        :param save - flag for saving the plot
-        :param show - flag for showing the plot
 
         Parameters
         ---------------
