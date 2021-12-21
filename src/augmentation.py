@@ -6,29 +6,17 @@ from config import img_size
 
 def get_random_transformation(white_background=True):
     """
-        Gets a random transformation function for data augmentation
-        :param white_background - Flag to set background of data augmentation to white or use an average of an image
+        Return a transformation function object to randomly transform a given image
+
+        Parameters
+        ---------------
+        white_background: bool, optional
+            flag to set background of data augmentation to white or use an average of an image
+        
+        Returns
+        ---------------
+        a function that takes in an image and output a random transformation
     """
-
-    def sample_rand_float(multiplier=0.2):
-        """
-            Samples random float
-            :param multiplier - additional multiplier for rand sample
-        """
-        return (np.random.rand() - 0.5) * multiplier * 2
-
-    def apply_colour_transform(img, brightness_range=(0.6, 1.4), intensity_range=0.2, is_annotation=False):
-        """
-            Applies colour and brightness transformations that do not affect the annotation
-            :param img - Image to transform
-            :param brightness_range - Percentage brightness range
-            :param intensity_range - Intensity range of channel shift
-            :param is_annotation - Whether current image is an annotation
-        """
-        if not is_annotation:
-            img = random_brightness(img, brightness_range) / 255
-            img = random_channel_shift(img, intensity_range)
-        return img
 
     affine_transform_args = dict(
         theta=np.random.randint(0, 359),
@@ -39,13 +27,53 @@ def get_random_transformation(white_background=True):
         zy=np.random.uniform(0.9, 1.1),
     )
 
+    def sample_rand_float(multiplier=0.2):
+        """ Returns a random float """
+        return (np.random.rand() - 0.5) * multiplier * 2
+
+    # colour and brightness transformations do not affect the annotation
+    def apply_colour_transform(img, brightness_range=(0.6, 1.4), intensity_range=0.2, is_annotation=False):
+        """
+            Apply colour transformation on a given image if it is not an annotation and return the transformed image
+
+            Parameters
+            ---------------
+            img: np.ndarray
+                the input image to be applied colour transformation on
+            brightness_range: tuple (float, float), optional
+                the range of brightness (compared the original one) to which the image will be transformed into
+            intensity_range: float, optional
+                the range of intensity to apply colour shift to the image
+            is_annotation: boole, optional
+                whether the image is an annotation 
+
+            Returns
+            ---------------
+            the transformed image
+        """
+        if not is_annotation:
+            img = random_brightness(img, brightness_range) / 255
+            img = random_channel_shift(img, intensity_range)
+        return img
+
     def transformation(img, is_annotation=False, do_colour_transform=True):
         """
-            Function which does the image transformation
-            :param img - Image to transform
-            :param is_annotation - Whether current image is an annotation
-            :param do_colour_transform - Flag to apply colour and brightness transformations
+            Apply transformation on a given image and return the transformed image
+
+            Parameters
+            ---------------
+            img: np.ndarray
+                the input image to be applied colour transformation on
+            is_annotation: bool, optional
+                whether the image is an annotation 
+            do_colour_transform: bool, optional
+                flag to apply colour and brightness transformations                
+
+            Returns
+            ---------------
+            the transformed image
         """
+
         if is_annotation:
             cur_cval = 0
         else:

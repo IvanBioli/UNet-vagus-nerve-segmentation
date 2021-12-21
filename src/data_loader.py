@@ -14,19 +14,45 @@ from data_utils import is_annotation
 
 
 class VagusDataLoader(keras.utils.Sequence):
-    """ Class to iterate over the data (as Numpy arrays). Image augmentation is performed here."""
+    """ 
+        Custom Data Loader class to iterate over the data (as Numpy arrays)
+
+        Attributes
+        ---------------
+        batch_size: int
+            the number of images would be loaded in a batch
+        img_size: tuple (int, int)
+            the size of the image being loaded
+        input_img_paths: str
+            system paths to the input (original) images
+        target_img_paths: str
+            system paths to the target (mask) images
+    """
 
     def __init__(self, batch_size, img_size, input_img_paths, target_img_paths):
+        """ Class constructor """
         self.batch_size = batch_size
         self.img_size = img_size
         self.input_img_paths = input_img_paths
         self.target_img_paths = target_img_paths
 
     def __len__(self):
+        """ Overiding len() """
         return len(self.target_img_paths) // self.batch_size
 
     def __getitem__(self, idx):
-        """Returns tuple (input, target) correspond to batch #idx."""
+        """
+            Overiding get()
+
+            Parameters
+            ---------------
+            idx: int
+                The index of the current batch to get from the dataset
+
+            Returns
+            ---------------
+            the idx-th batch of images in the tuple format of (input, target)
+        """
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
         batch_target_img_paths = self.target_img_paths[i : i + self.batch_size]
