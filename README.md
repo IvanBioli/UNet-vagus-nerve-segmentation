@@ -35,7 +35,7 @@ Steps are only required if training the model
 
 ## Evaluation
 
-1. To get some visualisation and the evaluation scores run `src/visualisation.py`
+1. To get some visualisations and the evaluation scores run `src/visualisation.py`
 
 ## Repository Description
 
