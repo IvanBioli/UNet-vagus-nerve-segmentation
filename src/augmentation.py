@@ -18,6 +18,10 @@ def get_random_transformation(white_background=True):
         a function that takes in an image and output a random transformation
     """
 
+    def sample_rand_float(multiplier=0.2):
+        """ Returns a random float """
+        return (np.random.rand() - 0.5) * multiplier * 2
+
     affine_transform_args = dict(
         theta=np.random.randint(0, 359),
         tx=int(sample_rand_float() * img_size[1]),
@@ -26,10 +30,6 @@ def get_random_transformation(white_background=True):
         zx=np.random.uniform(0.9, 1.1),
         zy=np.random.uniform(0.9, 1.1),
     )
-
-    def sample_rand_float(multiplier=0.2):
-        """ Returns a random float """
-        return (np.random.rand() - 0.5) * multiplier * 2
 
     # colour and brightness transformations do not affect the annotation
     def apply_colour_transform(img, brightness_range=(0.6, 1.4), intensity_range=0.2, is_annotation=False):
