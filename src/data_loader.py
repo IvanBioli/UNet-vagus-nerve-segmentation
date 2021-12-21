@@ -64,8 +64,8 @@ class VagusDataLoader(keras.utils.Sequence):
             annotation = np.load(target_path)
             annotation = np.expand_dims(annotation, axis=2)
             current_transform = get_random_transformation()
-            augmented_img = current_transform(img, do_colour_transform=False)
-            augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=False)
+            augmented_img = current_transform(img, do_colour_transform=True)
+            augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=True)
             augmented_annotation = cv2.threshold(augmented_annotation, 0.5, 1, cv2.THRESH_BINARY)[1]
             augmented_annotation = np.expand_dims(augmented_annotation, axis=2)
             x[j] = augmented_img

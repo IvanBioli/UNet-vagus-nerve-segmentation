@@ -13,7 +13,7 @@ seed = 0
 # flag for debug mode
 debug = False
 
-# name of model for saviong and loading purpose
+# name of model for saving and loading purpose
 cur_model_id = 'FL_and_BCE_Adam_default'
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'

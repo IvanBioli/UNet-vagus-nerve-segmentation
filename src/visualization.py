@@ -514,21 +514,22 @@ def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=Tr
         model_details = pickle.load(loss_file)
     fig, axs = plt.subplots(2, figsize=(5,5))
     best = np.argmin(model_details['val_loss'])
-    print('\nBest at epoch: ', best)
+    print('\nBest at epoch: ', best+1)
     # IoU
     axs[0].plot(model_details['iou_score'], label = 'Training set')
     axs[0].plot(model_details['val_iou_score'], label = 'Validation set')
     axs[0].set_ylabel("IoU")
     axs[0].set_xlabel("Epochs")
     axs[0].set_ylim([0,1])
+    axs[0].legend(loc='lower right')
     print('\nIoU:\ntraining = ', model_details['iou_score'][best], '\nvalidation = ', model_details['val_iou_score'][best])
     # DiceLoss
     axs[1].plot(model_details['dice_loss'], label = 'Training set')
     axs[1].plot(model_details['val_dice_loss'], label = 'Validation set')
     axs[1].set_ylabel("DL")
     axs[1].set_xlabel("Epochs")
-    axs[1].set_ylim(top = 1)
-    axs[1].legend(loc = 'lower right')
+    axs[1].set_ylim([0,1])
+    axs[1].legend(loc = 'upper right')
     print('\nDiceLoss:\ntraining = ', model_details['dice_loss'][best], '\nvalidation = ', model_details['val_dice_loss'][best])
     # SparseCategoricalCrossentropy
     print('\nBCE:\ntraining = ', model_details['sparse_categorical_crossentropy'][best], '\nvalidation = ',
@@ -537,7 +538,8 @@ def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=Tr
     print('\nFocal Loss:\ntraining = ', model_details['sigmoid_focal_crossentropy'][best], '\nvalidation = ',
           model_details['val_sigmoid_focal_crossentropy'][best])
     plt.tight_layout()
-    
+    #for i, j in enumerate(model_details['val_iou_score']):
+    #    print(str(i+1) + ': ' + str(j))
     if save:
         plt.savefig(out_fname + '/training_metrics_' + model_name + '.png')
     if show:
@@ -582,7 +584,7 @@ if __name__ == '__main__':
     
     ##################### Show histograms before and after postprocessing ############################
     training_path_list = get_samples(train_folder, test=False, num_samples=-1)
-    plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=False)
+    #plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=False)
     plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
 
     ##################### Show post processed prediction #############################################
