@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 
+# config and hyper-parameters for training and fine-tuning
 batch_size = 1
 img_size = (512, 512)
 num_classes = 2
@@ -9,12 +10,16 @@ epochs = 100
 fine_tune_epochs = 40
 seed = 0
 
+# flag for debug mode
 debug = False
 
+# name of model for saviong and loading purpose
 cur_model_id = 'FL_and_BCE_Adam_default'
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'
 model_losses_path = f'model_losses/{cur_model_id}.pkl'
+
+# parameters for post-processing
 minimum_fascicle_area = 101
 watershed_coeff = [0.35]
 

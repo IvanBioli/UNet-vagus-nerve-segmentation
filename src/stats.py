@@ -13,6 +13,12 @@ from data_utils import get_samples
 # custom = {'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
 def calculate_regions(pred, mask=None):
+    """
+        Calculate the regions (grouped predicted fascicles) from given prediction.
+        Return the regions of the mask if it is provided in the parameter
+        :param pred - the input prediction
+        :param mask - the input mask
+    """
     regions_pred = regionprops(label(((pred) * 255).astype(int)))
     if mask is not None:
         regions_mask = regionprops(label(((mask) * 255).astype(int)))
@@ -21,6 +27,13 @@ def calculate_regions(pred, mask=None):
         return (regions_pred, None)
 
 def compute_bins(n, pred, mask=None):
+    """
+        Compute the number of bins to display the distribution of the stas on prediction and mask
+        Return the number of bins of the mask if it is provided in the parameter
+        :param n - TODO
+        :param pred - the input prediction
+        :param mask - the input mask
+    """
     if mask is None:
         minimum = min(pred)
         maximum = max(pred)
@@ -32,31 +45,34 @@ def compute_bins(n, pred, mask=None):
     bins = np.arange(minimum, maximum + binwidth, binwidth)
     return bins
 
-def calculate_metrics(mask, pred_logits, metrics=["iou"]):
-    stats = {}
+# def calculate_metrics(mask, pred_logits, metrics=["iou"]):
+#     stats = {}
 
-    if "iou" in metrics:
-        stats["iou"] = iou_score(mask, pred_logits).numpy()
+#     if "iou" in metrics:
+#         stats["iou"] = iou_score(mask, pred_logits).numpy()
 
-    if "bce" in metrics:
-        scce = keras.losses.SparseCategoricalCrossentropy()
-        stats["bce"] = scce(mask, pred_logits).numpy()
+#     if "bce" in metrics:
+#         scce = keras.losses.SparseCategoricalCrossentropy()
+#         stats["bce"] = scce(mask, pred_logits).numpy()
 
-    if "dice" in metrics:
-        stats["dice"] = dice_loss(mask, pred_logits).numpy()
+#     if "dice" in metrics:
+#         stats["dice"] = dice_loss(mask, pred_logits).numpy()
 
-    if "focal" in metrics:
-        fce = tfa.losses.SigmoidFocalCrossEntropy()
-        stats["focal"] = fce(mask, pred_logits).numpy()
+#     if "focal" in metrics:
+#         fce = tfa.losses.SigmoidFocalCrossEntropy()
+#         stats["focal"] = fce(mask, pred_logits).numpy()
 
-    if "tversky" in metrics:
-        stats["tversky"] = tversky_loss(mask, pred_logits).numpy()
+#     if "tversky" in metrics:
+#         stats["tversky"] = tversky_loss(mask, pred_logits).numpy()
 
-    return stats
+#     return stats
 
 
-# Computes the average ratio between the areas of the fascicles and of the background
 def compute_area_ratio(sample_train):
+    """
+        Computes the average ratio between the areas of the fascicles and of the background
+        :param sample_train - the sample masks on which the ratio is calculated
+    """
     tot_area_fascicles = 0
     n_samples = len(sample_train)
     for _, mask_path in sample_train:
@@ -70,8 +86,11 @@ def compute_area_ratio(sample_train):
 
 # compute color histograms of an image
 def get_image_histogram(img):
+    """
+        Compute color histograms of an image
+        :param img - the input image
+    """
     hist = np.zeros([3, 256])
-
     img_ = np.floor(img * 255)
     
     for x in range(img_.shape[0]):
@@ -87,8 +106,12 @@ def get_image_histogram(img):
     hist = hist / (img.shape[0] * img.shape[1]) * 100
     return hist
 
-# compute color histograms of a images dataset
+
 def get_dataset_histogram(path_list):
+    """
+        Compute color histograms of a images dataset
+        :param path_list - the path to the input image dataset
+    """
     set_hist = np.zeros([3, 256])
     
     for img_path in path_list:

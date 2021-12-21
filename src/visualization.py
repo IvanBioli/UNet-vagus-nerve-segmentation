@@ -19,7 +19,13 @@ custom = {'iou_score': iou_score, 'dice_loss': dice_loss, 'nerve_segmentation_lo
 
 
 def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
-
+    """
+        Plot the color histogram of images agains that of the whole dataset
+        :param path_list - paths to the input images
+        :param dataset_path_list - path to training dataset folder
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+    """
     if save:
         output_folder = os.path.join(os.getcwd(), 'results/visualisations/distributions')
         os.makedirs(output_folder, exist_ok=True)
@@ -62,8 +68,15 @@ def plot_color_histogram(path_list, dataset_path_list, save=False, show=True):
         plt.show()
 
 
-def plot_augmented_images(img_path, num_aug=6, num_aug_wcolor=2, save=False, show=True):
-
+def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, show=True):
+    """
+        Visualize the different augmentations from a given image
+        :param img_path - path to the input image
+        :param num_aug - number of augmentations to be displayed
+        :param num_aug_wcolor - number of augmentations with color transformation to be displayed
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+    """
     img = np.load(img_path)
 
     if save:
@@ -118,6 +131,14 @@ def plot_augmented_images(img_path, num_aug=6, num_aug_wcolor=2, save=False, sho
         
 
 def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=False, save=False, show=True):
+    """
+        Visualize the original images, the annotated masks, and the predicted masks
+        :param path_list - paths to the input images
+        :param trained_model_checkpoint - trained model to load and make prediction
+        :param wstats - flag to display the metrics stats within the plot
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+    """
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
 
@@ -165,8 +186,18 @@ def plot_masks_vs_predictions(path_list, trained_model_checkpoint=None, wstats=F
     if show:
         plt.show()
 
-def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None, save=False, show=True, postprocessing = False):
-    
+def plot_fascicles_distribution(path_list, test=False, trained_model_checkpoint=None, save=False, show=True, postprocessing=False):
+    """
+        Plot the the distribution of the stats of the train dataset
+        Stats including: fascicles' area, number of fascicle, fascicles' eccentricity
+        :param path_list - paths to the input images
+        :param test - flag to plot the distribution of the annotated masks or not
+        :param trained_model_checkpoint - trained model to load and make prediction
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+        :param postprocessing - flag to postprocess the prediction or not
+    """
+
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects = custom)
 
@@ -187,7 +218,7 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     num_fascicles_pred = []
     eccentricity_pred = []
 
-    for p in paths:
+    for p in path_list:
         if not test:
             img_path, mask_path = p
             mask = np.load(mask_path)
@@ -270,7 +301,14 @@ def plot_fascicles_distribution(paths, test=False, trained_model_checkpoint=None
     if show:
         plt.show()
 
-def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, show=True, postprocessing = False):
+def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, show=True):
+    """
+        Visualized the prediction before and after postprocessing
+        :param path_list - paths to the input images
+        :param trained_model_checkpoint - trained model to load and make prediction
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+    """
     
     if trained_model_checkpoint is not None:
         trained_model = keras.models.load_model(trained_model_checkpoint, custom_objects=custom)
@@ -302,7 +340,7 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
             axs[k, i].yaxis.set_major_locator(ticker.NullLocator())
 
     axs[0, 0].set_title('Original Image')
-    axs[0, 1].set_title('Prediction before\n postprocesing')
+    axs[0, 1].set_title('Prediction before\n postprocessing')
     axs[0, 2].set_title('Prediction after\n postprocessing')
 
 
@@ -313,6 +351,13 @@ def plot_postprocessed(path_list, trained_model_checkpoint=None, save=False, sho
 
 # To plot the model losses and metrics
 def plot_model_losses_and_metrics(loss_filepath, model_name, save=False, show=True):
+    """
+        Plot the losses and metrics during training the model
+        :param loss_filepath - path to the saved losses and metrics recorded from the training
+        :param model_name - the name of the trained model
+        :param save - flag for saving the plot
+        :param show - flag for showing the plot
+    """
 
     if save:
         output_folder = os.path.join(os.getcwd(), 'results/visualisations/training_metrics')

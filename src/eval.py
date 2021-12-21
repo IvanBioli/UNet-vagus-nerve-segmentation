@@ -5,26 +5,38 @@ import cv2
 import matplotlib.pyplot as plt
 from config import minimum_fascicle_area, watershed_coeff
 
-# from src.config import num_classes, batch_size
-# from src.visualisation import show_overlay_result, show_result_test
 from config import num_classes, batch_size
-# from visualisation import show_overlay_result, show_result_test
 
 
-def get_model_prediction(trained_model, input_image):
-    prediction = trained_model.predict(input_image)
+def get_model_prediction(trained_model, img):
+    """
+        Predict the mask of an imput image
+        :param trained_model - the trained model
+        :param img - the input image to predict the mask
+    """
+    prediction = trained_model.predict(img)
     prediction = np.argmax(prediction, axis=-1)
     return prediction
 
-def delete_small_regions(input_mask, threshold = 101):
-    regions_mask = regionprops(label((input_mask * 255).astype(int)))
+def delete_small_regions(mask, threshold=101):
+    """
+        Remove regions from a mask which have area smaller than a threshold
+        :param mask - the input mask
+        :param threshold - the area (number of pixels) threshold
+    """
+    regions_mask = regionprops(label((mask * 255).astype(int)))
     regions_to_delete = [x for x in regions_mask if x.area < threshold]
     for x in regions_to_delete:
         for c in x.coords:            
-            input_mask[c[0], c[1]] = 1 - input_mask[c[0], c[1]]
-    return input_mask 
+            mask[c[0], c[1]] = 1 - mask[c[0], c[1]]
+    return mask 
 
 def apply_watershed(mask, coeff_list=[0.35]):
+    """
+        Apply the watershed algorithm to a mask 
+        :param mask - the input mask
+        :param coeff_list - TODO
+    """
     thresh = (mask * 255).astype('uint8')
     img = cv2.merge((thresh,thresh,thresh))
     
@@ -67,6 +79,14 @@ def apply_watershed(mask, coeff_list=[0.35]):
     return img
 
 def predict_mask(trained_model, img, threshold = 0, coeff_list = None):
+    """
+        Predict the mask of an image and then apply pre-processing steps to the mask
+        Pre-processing steps include: remove small regions and apply watershed 
+        :param trained_model - the trained model
+        :param img - the input image to predict the mask
+        :param threshold - threshold to apply delete_small_regions
+        :param coeff_list - coefficients for apply_watershed
+    """
     prediction = get_model_prediction(trained_model, np.expand_dims(img, axis=0))[0, :, :]
     prediction = delete_small_regions(prediction, threshold)
     if coeff_list is not None:
