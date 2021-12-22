@@ -1,5 +1,4 @@
 import numpy as np
-from skimage.measure import label, regionprops
 from stats import calculate_regions
 
 def get_outlier_regions(regions, area_threshold=3101, eccen_threshold=(0.33, 0.95)):

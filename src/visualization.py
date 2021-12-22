@@ -1,16 +1,14 @@
 import os
 import pickle
-from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 from tensorflow import keras
 import tensorflow_addons as tfa
-import cv2
 from loss import dice_loss, nerve_segmentation_loss, tversky_loss, iou_score, focal_tversky_loss, focal_loss, custom_loss
 from eval import predict_mask, get_model_prediction
 from stats import get_samples, calculate_regions, compute_bins, get_image_histogram, get_dataset_histogram
-from augmentation import get_random_transformation
+from augmentation import get_random_affine_transformation
 from post_processing import draw_outliers_regions
 
 from config import initialise_run, model_path, minimum_fascicle_area, watershed_coeff
@@ -106,11 +104,11 @@ def plot_augmented_images(img_path, num_aug=4, num_aug_wcolor=2, save=False, sho
     augmented_imgs_wcolor = []
 
     for _ in range(num_aug):
-        transform = get_random_transformation()
+        transform = get_random_affine_transformation()
         augmented_imgs.append(transform(img, do_colour_transform=False))
     
     for _ in range(num_aug_wcolor):
-        transform = get_random_transformation()
+        transform = get_random_affine_transformation()
         augmented_imgs_wcolor.append(transform(img))
 
     # reshape np array to fit in the plot
@@ -561,6 +559,10 @@ if __name__ == '__main__':
     plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
     print('\n------------------------------- Training with BCE+FL -------------------------------')
     plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
+    print('\n------------------------------- Training with test -------------------------------')
+    plot_model_losses_and_metrics('model_losses/test.pkl', 'test', save=True, show=True)
+    print('\n------------------------------- Training with test_original -------------------------------')
+    plot_model_losses_and_metrics('model_losses/test_original.pkl', 'test_original', save=True, show=True)
 
     ##################### Show augmented images ###################################################
     sample_img_path = get_samples(train_folder, test=True)

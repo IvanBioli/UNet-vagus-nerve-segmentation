@@ -33,7 +33,6 @@ def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers
 
     trained_model = keras.models.load_model(trained_model_path, custom_objects={
         'nerve_segmentation_loss': nerve_segmentation_loss,
-        'SparseMeanIoU': SparseMeanIoU,
         'dice_loss': dice_loss,
         'tversky_loss': tversky_loss
     })
@@ -57,10 +56,8 @@ def fine_tune(trained_model_path, model_id, num_blocks_fine_tune, encoder_layers
         optimizer=_optimizer,
         loss=_loss,
         metrics=[
-            SparseMeanIoU(num_classes=num_classes, name='spare_mean_iou'),
             dice_loss,
             tversky_loss,
-            # keras.metrics.SparseCategoricalAccuracy(),
             keras.metrics.SparseCategoricalCrossentropy()
         ]
     )

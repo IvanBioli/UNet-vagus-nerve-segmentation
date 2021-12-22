@@ -1,16 +1,10 @@
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 from skimage.measure import regionprops, label
-from tensorflow import keras
-import tensorflow_addons as tfa
-from loss import iou_score, dice_loss, tversky_loss
-from eval import predict_mask
 
-from config import initialise_run, minimum_fascicle_area, watershed_coeff
+from config import initialise_run
 from data_utils import get_samples
-# custom = {'dice_loss': dice_loss, 'nerve_segmentation_loss': nerve_segmentation_loss, 'tversky_loss': tversky_loss}
 
 def calculate_regions(pred, mask=None):
     """
@@ -36,20 +30,20 @@ def calculate_regions(pred, mask=None):
 
 def compute_bins(n, pred, mask=None):
     """
-        Compute the number of bins to display the distribution of the stas on prediction and mask
+        Compute the bins to display the distribution of the statistics on prediction and mask on the same histogram
 
         Parameters
         ---------------
         n: int
-            TODO
+            number of bins
         pred: np.ndarray
-            the input prediction
+            the input prediction statistics
         mask: np.ndarray, optional 
-            the input mask
+            the input mask statistics
 
         Returns
         ---------------
-        the number of bins of the mask if it is provided in the parameter
+        the bins for displaying the statistics of the input prediction and the input mask on the same histogram
     """
     if mask is None:
         minimum = min(pred)
@@ -143,14 +137,6 @@ def get_dataset_histogram(path_list):
 
 if __name__ == '__main__':
     initialise_run()
-    model_save_file = os.path.join(os.getcwd(), 'model_checkpoints/Adam_SCC_512_default.h5')
-    # Loading data from train folder
-    train_folder = os.path.join(os.getcwd(), 'data/vagus_dataset_11/train')
+    train_folder = os.path.join(os.getcwd(), 'data/original_dataset/train')
     sample_train = get_samples(train_folder, num_samples=-1)
-    # Loading data from unlabelled folder
-    # unlabelled_folder = os.path.join(os.getcwd(), 'data/vagus_dataset/unlabelled')
-    # sample_unlabelled = get_samples(unlabelled_folder, test=True, num_samples=-1)
-    # Showing fascicles distribution
-    #show_fascicles_distribution(sample_train, trained_model_checkpoint=model_save_file, save=True)
-    # show_fascicles_distribution(sample_unlabelled, trained_model_checkpoint=model_save_file, save=True)
     print(compute_area_ratio(sample_train))

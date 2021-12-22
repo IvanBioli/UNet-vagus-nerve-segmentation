@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from pdf2image import convert_from_path
 
-from src.config import img_size, initialise_run
+from config import img_size, initialise_run
 
 
 def convert_dataset(input_directory, output_size=(160, 160), verbose=False, unlabelled_dir=False):

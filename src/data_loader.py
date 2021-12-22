@@ -1,12 +1,8 @@
 import cv2
 from tensorflow import keras
 import numpy as np
-from tensorflow.keras.preprocessing.image import load_img
-
-# from src.config import debug
-# from src.augmentation import get_random_affine_transformation
 from config import debug
-from augmentation import get_random_transformation
+from augmentation import get_random_affine_transformation
 
 import matplotlib.pyplot as plt
 
@@ -14,9 +10,8 @@ from data_utils import is_annotation
 
 
 class VagusDataLoader(keras.utils.Sequence):
-    """ 
+    """
         Custom Data Loader class to iterate over the data (as Numpy arrays)
-
         Attributes
         ---------------
         batch_size: int
@@ -28,7 +23,6 @@ class VagusDataLoader(keras.utils.Sequence):
         target_img_paths: str
             system paths to the target (mask) images
     """
-
     def __init__(self, batch_size, img_size, input_img_paths, target_img_paths):
         """ Class constructor """
         self.batch_size = batch_size
@@ -37,18 +31,16 @@ class VagusDataLoader(keras.utils.Sequence):
         self.target_img_paths = target_img_paths
 
     def __len__(self):
-        """ Overiding len() """
+        """ Overriding len() """
         return len(self.target_img_paths) // self.batch_size
 
     def __getitem__(self, idx):
         """
-            Overiding get()
-
+            Overriding get()
             Parameters
             ---------------
             idx: int
                 The index of the current batch to get from the dataset
-
             Returns
             ---------------
             the idx-th batch of images in the tuple format of (input, target)
@@ -63,9 +55,9 @@ class VagusDataLoader(keras.utils.Sequence):
             img = np.load(img_path)
             annotation = np.load(target_path)
             annotation = np.expand_dims(annotation, axis=2)
-            current_transform = get_random_transformation()
-            augmented_img = current_transform(img, do_colour_transform=True)
-            augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=True)
+            current_transform = get_random_affine_transformation()
+            augmented_img = current_transform(img, do_colour_transform=False)
+            augmented_annotation = current_transform(annotation, is_annotation=True, do_colour_transform=False)
             augmented_annotation = cv2.threshold(augmented_annotation, 0.5, 1, cv2.THRESH_BINARY)[1]
             augmented_annotation = np.expand_dims(augmented_annotation, axis=2)
             x[j] = augmented_img

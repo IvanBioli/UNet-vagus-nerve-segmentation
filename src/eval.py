@@ -1,11 +1,6 @@
 import numpy as np
-from tensorflow import keras
 from skimage.measure import label, regionprops
 import cv2
-import matplotlib.pyplot as plt
-from config import minimum_fascicle_area, watershed_coeff
-
-from config import num_classes, batch_size
 
 
 def get_model_prediction(trained_model, img):
@@ -58,11 +53,11 @@ def apply_watershed(mask, coeff_list=[0.35]):
         mask: np.ndarray
             the input mask
         coeff_list: [float], optional
-            TODO
+            list of thresholding coefficients for which the watershed algorithm is executed
 
         Returns
         ---------------
-        TODO
+        the mask after applying the watershed algorithm
     """
     thresh = (mask * 255).astype('uint8')
     img = cv2.merge((thresh,thresh,thresh))
@@ -127,51 +122,3 @@ def predict_mask(trained_model, img, threshold = 0, coeff_list = None):
         prediction = apply_watershed(prediction, coeff_list)
         prediction = delete_small_regions(prediction, threshold)
     return prediction
-
-
-'''
-def one_prediction_iou(trained_model, test_img, test_anno, show_images=True):
-    metric = keras.metrics.MeanIoU(num_classes=num_classes)
-
-    x = np.expand_dims(test_img, axis=0)
-    y_true = test_anno
-    y_pred = get_model_prediction(trained_model, x)
-
-    metric.update_state(y_pred, y_true)
-
-    iou_score = np.round(metric.result().numpy(), decimals=2)
-
-    if show_images:
-        for i in range(batch_size):
-            # show_combined_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score, save_file='results/combined1.png')
-            # show_overlay_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score, save_file='results/overlay2.png')
-            show_result_test(x[0, :, :, :], y_pred[0, :, :])
-            # show_original_image(x, i=i)
-            # show_original_annotation(y_true, i=i)
-            # show_predicted_annotation(y_pred, i=i)
-
-    return iou_score
-
-
-def model_iou(trained_model, test_img_generator, test_anno_generator, show_images=True):
-    metric = keras.metrics.MeanIoU(num_classes=num_classes)
-
-    x = test_img_generator.next()
-    y_true = test_anno_generator.next()
-    y_pred = get_model_prediction(trained_model, x)
-
-    metric.update_state(y_pred, y_true[:, :, :, 0])
-
-    iou_score = np.round(metric.result().numpy(), decimals=2)
-
-    if show_images:
-        for i in range(batch_size):
-            # show_combined_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score, save_file='results/combined1.png')
-            show_overlay_result(model_input=x, y_true=y_true, y_pred=y_pred, i=i, iou_score=iou_score,
-                                save_file='results/overlay2.png')
-            # show_original_image(x, i=i)
-            # show_original_annotation(y_true, i=i)
-            # show_predicted_annotation(y_pred, i=i)
-
-    return iou_score
-'''

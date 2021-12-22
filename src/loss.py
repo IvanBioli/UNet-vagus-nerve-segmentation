@@ -115,9 +115,6 @@ def diff_tversky_loss(y_true, y_pred):
         dice tversky loss
     """
     y_true = tf.cast(y_true, tf.float32)
-    # y_pred = tf.cast(y_pred, tf.float32)
-    # y_true = K.flatten(y_true)
-    # y_pred = K.flatten(y_pred)
     beta = 0.154
     numerator = K.sum(y_true * y_pred)
     denominator = K.sum(y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred))

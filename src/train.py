@@ -1,7 +1,7 @@
 import pickle
 
-import tensorflow_addons as tfa
 from tensorflow import keras
+import tensorflow_addons as tfa
 
 from config import batch_size, img_size, epochs
 from data_loader import VagusDataLoader
@@ -11,9 +11,8 @@ from loss import iou_score, dice_loss, tversky_loss, focal_tversky_loss, custom_
 def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
     """
         Trains an iteration of the model
-
         Parameters
-        ---------------        
+        ---------------
         model: tf.keras.Model
             keras model to be trained
         model_id: str
@@ -22,13 +21,12 @@ def train(model, model_id, train_img_target_pairs, val_img_target_pairs):
             train img mask pairs
         val_img_target_pairs: ([str], [str])
             validation img mask pairs
-
         Returns
         ----------------
         the trained model
     """
-    _optimizer = keras.optimizers.Adam()
-    _loss = custom_loss  # change loss functions here
+    _optimizer = keras.optimizers.Adam()   # change optimizer here
+    _loss = custom_loss   # change loss functions here
 
     model.compile(
         optimizer=_optimizer,
