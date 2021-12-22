@@ -14,7 +14,7 @@ seed = 0
 debug = False
 
 # Name of model for saving, loading and visualization purposes
-cur_model_id = 'test'
+cur_model_id = 'FL_and_BCE_Adam_default'
 ft_model_id = f'{cur_model_id}_fine_tune'
 model_path = f'model_checkpoints/{cur_model_id}.h5'
 model_losses_path = f'model_losses/{cur_model_id}.pkl'
@@ -28,7 +28,7 @@ def initialise_run():
     """ Machine specific run initialisation """
     # devices = tf.config.experimental.list_physical_devices('GPU')
     # tf.config.experimental.set_memory_growth(devices[0], True)
-    os.chdir('C:/Users/ivanb/Documents/GitHub/ml-project-2-vagus_segmentation')
+    os.chdir('C:/Users/ivanb/Documents/GitHub/ML Project 2')
     os.makedirs('model_checkpoints', exist_ok=True)
     os.makedirs('model_losses', exist_ok=True)
     random.seed(seed)

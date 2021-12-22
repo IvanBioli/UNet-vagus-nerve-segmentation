@@ -559,10 +559,6 @@ if __name__ == '__main__':
     plot_model_losses_and_metrics('model_losses/FL_Adam_default.pkl', 'FL', save=True, show=True)
     print('\n------------------------------- Training with BCE+FL -------------------------------')
     plot_model_losses_and_metrics('model_losses/FL_and_BCE_Adam_default.pkl', 'FL+BCE', save=True, show=True)
-    print('\n------------------------------- Training with test -------------------------------')
-    plot_model_losses_and_metrics('model_losses/test.pkl', 'test', save=True, show=True)
-    print('\n------------------------------- Training with test_original -------------------------------')
-    plot_model_losses_and_metrics('model_losses/test_original.pkl', 'test_original', save=True, show=True)
 
     ##################### Show augmented images ###################################################
     sample_img_path = get_samples(train_folder, test=True)
@@ -586,7 +582,6 @@ if __name__ == '__main__':
     
     ##################### Show histograms before and after postprocessing ############################
     training_path_list = get_samples(train_folder, test=False, num_samples=-1)
-    #plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=False)
     plot_fascicles_distribution(training_path_list, test=False, trained_model_checkpoint=model_save_file, save=True, show=True, postprocessing=True)
 
     ##################### Show post processed prediction #############################################
