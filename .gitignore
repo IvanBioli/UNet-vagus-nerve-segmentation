@@ -1,6 +1,5 @@
 .ipynb_checkpoints
 .idea
-data/vagus_dataset_*
 data/*
 figures/*
 model_checkpoints/model_*
@@ -11,14 +10,12 @@ papers
 notebooks
 figures
 src/visualisation_old.py
+.vscode
 
 # LaTeX temporary files
 *.aux
 *.log
 *.toc
-
-# PDF output - usually a bad idea to keep this in Git
-*.pdf
 
 # Latexmk
 *.fdb_latexmk
