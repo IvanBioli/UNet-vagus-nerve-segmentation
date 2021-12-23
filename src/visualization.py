@@ -567,12 +567,30 @@ if __name__ == '__main__':
 
     ##################### Show mask vs prediction ##################################################
     ##### From validation set #####
-    path_list = get_samples(validation_folder, num_samples=3)
+    # To pick a random sample uncomment the following line
+    #path_list = get_samples(validation_folder, num_samples=3)
+    valid_imgs = ['vago SX - 27.06.18 - pezzo 3 - fetta 0054.npy',
+                  'vago DX - 27.06.18 - HH - vetrino 1 - prox - campione 0002.npy',
+                  'Vago dx 21.02.19 DISTALE con elettrodo - vetrino 1 - fetta 0215.npy']
+    path_list = []
+    for img in valid_imgs:
+        image_path = 'data/original_dataset/validation/images/' + img
+        mask_path = 'data/original_dataset/validation/annotations/' + img
+        path_list.append((os.path.join(os.getcwd(), image_path),os.path.join(os.getcwd(), mask_path)))
+    # To pick a random sample uncomment the following line
+    #path_list = get_samples(validation_folder, num_samples=3)
     plot_masks_vs_predictions(path_list=path_list, trained_model_checkpoint=model_save_file, wstats=True, save=True, show=True)
+
     ##### From unlabelled set #####
-    unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=15)
-    # Picking images to show different behaviours
-    unlabelled_sample_list = [unlabelled_sample_list[1], unlabelled_sample_list[11], unlabelled_sample_list[2]]
+    unlabelled_imgs = ['vago SX - 26.09.18 - pezzo 1 - fetta 0024.npy',
+                       'vago DX - 26.09.18 - pezzo 3 - fetta 0024.npy',
+                       'vago SX - 26.09.18 - pezzo 3 - fetta 0026.npy']
+    unlabelled_sample_list = []
+    for img in unlabelled_imgs:
+        image_path = 'data/original_dataset/unlabelled/images/' + img
+        unlabelled_sample_list.append(os.path.join(os.getcwd(), image_path))
+    # To pick a random sample uncomment the following line
+    #unlabelled_sample_list = get_samples(unlabelled_folder, test=True, num_samples=3)
     plot_image_vs_predictions(path_list=unlabelled_sample_list, trained_model_checkpoint=model_save_file, save=True, show=True)
 
     ##################### Show color histogram ######################################################
