@@ -9,7 +9,6 @@ src/__pycache__
 papers
 notebooks
 figures
-src/visualisation_old.py
 .vscode
 
 # LaTeX temporary files
