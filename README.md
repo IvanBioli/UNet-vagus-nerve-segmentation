@@ -5,15 +5,18 @@ All instructions are relative to the root directory of the repository.
 
 ### Install environment
 
-1. We use conda for managing our environment, install the environment with the provided `.yml` file by running
+1. To install the needed packages, a requirements.txt file is provided. To install the needed packages, run:
+```
+pip install -r requirements.txt
+```
+
+2. Alternatively, on Linux you can use conda for managing our environment. Install the environment with the provided `.yml` file by running
 
 ``` 
 conda env create -f vagus.yml
 ```
 
 Make sure conda is installed on your computer otherwise visit https://docs.anaconda.com/anaconda/install/index.html
-
-Alternatively, there is also a requirements.txt file provided.
 
 ### Get Data
 
