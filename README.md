@@ -21,7 +21,7 @@ Make sure conda is installed on your computer otherwise visit https://docs.anaco
 ### Get Data
 
 1. In the `initialise_run()` in `src/config.py`, change directory to the root directory of the repository.
-2. Download data from Google Drive (link [here](https://drive.google.com/file/d/1n-2QMZYHBPzEn63J9pFw_tijWtcLZu2X/view?usp=sharing)), unzip the folder and put it in: `data/original_dataset`.
+2. The data is owned by EPFL STI IBI-STI TNE and we are not allowed to share it, please ask them to have access to it. Download data from Google Drive, unzip the folder and put it in: `data/original_dataset`.
 3. Run `src/data_convert.py` to convert the dataset to model ready format (only run this once).
 
 ## Evaluation and results visualization
@@ -58,3 +58,8 @@ Beware that our predictions are integers and not one-hot labels.
   * `stats.py` - utility functions for prediction statistics
   * `train.py` - main script for training
   * `visualisation.py` - main script for visualising model results
+
+## Authors
+* Ivan Bioli
+* Umer Hasan
+* Cao Khanh Nguyen
